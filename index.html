@@ -2,22 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ONE BULLET</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%;
     background: #0b0c10;
     color: #e8e8f0;
     font-family: 'Segoe UI', Arial, sans-serif;
     overflow: hidden;
+    overscroll-behavior: none;
   }
   body {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
+    touch-action: none;
   }
 
   #gameContainer {
@@ -35,6 +38,7 @@
     border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 0 50px rgba(0,0,0,0.6);
     cursor: crosshair;
+    touch-action: none;
   }
 
   .overlay {
@@ -51,6 +55,7 @@
     text-align: center;
     padding: 20px;
     overflow-y: auto;
+    z-index: 40;
   }
   .overlay.show { display: flex; }
 
@@ -115,18 +120,33 @@
   .lobby-panel { display: none; flex-direction: column; gap: 8px; width: 100%; }
   .lobby-panel.show { display: flex; }
   .lobby-label { font-size: 12px; color: #b6bad0; text-align: left; letter-spacing: 0.5px; margin-top: 4px; }
-  textarea.code-box {
+  textarea.code-box, input.code-box {
     width: 100%;
-    height: 54px;
+    height: 44px;
     resize: none;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 6px;
     color: #ffe27a;
     font-family: 'Consolas', monospace;
-    font-size: 11px;
+    font-size: 13px;
     padding: 8px;
     word-break: break-all;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  input.code-box { text-transform: none; }
+  #hostCodeOut {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 10px;
+    height: 56px;
+  }
+  #joinCodeIn {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 10px;
+    height: 56px;
   }
   .status-line {
     font-size: 12.5px;
@@ -142,12 +162,82 @@
   }
   .winText.p1 { color: #35d8ff; text-shadow: 0 0 25px #35d8ff; }
   .winText.p2 { color: #ff5d3d; text-shadow: 0 0 25px #ff5d3d; }
+
+  /* ---------------- mobile rotate hint ---------------- */
+  .rotate-hint {
+    display: none;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.55);
+    color: #ffd08a;
+    font-size: 10.5px;
+    letter-spacing: 0.4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 45;
+    white-space: nowrap;
+  }
+  @media (orientation: portrait) and (max-width: 700px) {
+    .rotate-hint { display: block; }
+  }
+
+  /* ---------------- touch controls (phones/tablets) ---------------- */
+  .touch-controls {
+    display: none;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 14px;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 30;
+    pointer-events: none;
+  }
+  .touch-move { display: flex; gap: 10px; pointer-events: auto; }
+  .touch-btn {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #e8e8f0;
+    font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-user-select: none; user-select: none;
+    touch-action: none;
+    padding: 0;
+  }
+  .touch-btn:active, .touch-btn.active {
+    background: rgba(255,255,255,0.22);
+  }
+  .jump-btn {
+    width: 74px; height: 74px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    pointer-events: auto;
+    background: rgba(255,224,138,0.1);
+    border-color: rgba(255,224,138,0.35);
+  }
+  @media (pointer: coarse) {
+    .touch-controls { display: flex; }
+  }
 </style>
 </head>
 <body>
 
 <div id="gameContainer">
   <canvas id="canvas" width="960" height="540"></canvas>
+  <div class="rotate-hint">Rotate your phone for a bigger arena</div>
+
+  <!-- TOUCH CONTROLS: drag/tap on the arena itself to aim + fire -->
+  <div id="touchControls" class="touch-controls">
+    <div class="touch-move">
+      <button id="btnLeft" class="touch-btn">&#9664;</button>
+      <button id="btnRight" class="touch-btn">&#9654;</button>
+    </div>
+    <button id="btnJump" class="touch-btn jump-btn">JUMP</button>
+  </div>
 
   <!-- START / LOBBY SCREEN -->
   <div id="startOverlay" class="overlay show">
@@ -157,14 +247,14 @@
       <!-- Main menu -->
       <div id="menuPanel" class="lobby-panel show">
         <div class="rule-note">
-          Real 2-player multiplayer — <b>one person hosts, the other joins</b> using a short
-          connection code (peer-to-peer, no account needed). Each player plays on their own
-          device: <b>A / D</b> move, <b>Space</b> jump, <b>mouse</b> aims your arm and gun,
-          <b>left click</b> shoots. You carry <b>one bullet</b> — fire it and you're empty
-          until you reload. Bullets <b>ricochet once</b> off a wall or the arena edge, then
-          gravity takes over and they always fall and settle on the ground — never stuck
-          floating on a wall. Walk up to a spent bullet to reload from it, or if you're
-          unarmed, press fire near one to <b>kick it away</b> instead.
+          Real 2-player multiplayer — <b>one person hosts, the other joins</b> with a single
+          <b>4-digit code</b> (peer-to-peer, no account needed). Each player plays on their own device.
+          <b>Desktop:</b> A / D move, Space jump, mouse aims &amp; shoots. <b>Phone:</b> use the
+          on-screen arrows and JUMP button to move, drag/tap anywhere on the arena to aim and fire.
+          You carry <b>one bullet</b> — fire it and you're empty until you reload. Bullets
+          <b>ricochet once</b> off a wall or the arena edge, then gravity always pulls them down
+          to rest on the ground. Walk up to a spent bullet to reload, or if you're unarmed, fire
+          near one to <b>kick it away</b> instead.
         </div>
         <div class="btn-row">
           <button id="hostBtn" class="primary">Host Match</button>
@@ -174,24 +264,18 @@
 
       <!-- Host flow -->
       <div id="hostPanel" class="lobby-panel">
-        <p class="lobby-label">1. Send this code to the other player:</p>
-        <textarea id="hostCodeOut" class="code-box" readonly placeholder="Generating..."></textarea>
+        <p class="lobby-label">Send this code to the other player:</p>
+        <textarea id="hostCodeOut" class="code-box" readonly placeholder="Generating..." rows="1"></textarea>
         <button id="copyHostCode" class="small">Copy Code</button>
-        <p class="lobby-label">2. Paste their response code here:</p>
-        <textarea id="hostAnswerIn" class="code-box" placeholder="Paste response code here"></textarea>
-        <button id="hostConnectBtn" class="primary">Connect</button>
         <p id="hostStatus" class="status-line"></p>
         <button id="hostBackBtn" class="link-btn">&larr; Back</button>
       </div>
 
       <!-- Join flow -->
       <div id="joinPanel" class="lobby-panel">
-        <p class="lobby-label">1. Paste the host's code here:</p>
-        <textarea id="joinCodeIn" class="code-box" placeholder="Paste host code here"></textarea>
-        <button id="joinGenerateBtn" class="primary">Generate Response Code</button>
-        <p class="lobby-label">2. Send this code back to the host:</p>
-        <textarea id="joinCodeOut" class="code-box" readonly placeholder="Appears after step 1"></textarea>
-        <button id="copyJoinCode" class="small">Copy Code</button>
+        <p class="lobby-label">Paste the host's code here:</p>
+        <input id="joinCodeIn" class="code-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="joinConnectBtn" class="primary">Connect</button>
         <p id="joinStatus" class="status-line"></p>
         <button id="joinBackBtn" class="link-btn">&larr; Back</button>
       </div>
@@ -214,10 +298,14 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 /* ==========================================================================
-   ONE BULLET — peer-to-peer 2-player shooter (single HTML file, no backend)
-   Sections: Audio, Input, Mouse, Net (WebRTC), Physics/Collision, Arena,
+   ONE BULLET — peer-to-peer 2-player shooter (single HTML file, no custom
+   backend). Networking uses PeerJS's public cloud broker only to introduce
+   the two players with a single short code; gameplay data flows directly
+   peer-to-peer over WebRTC once connected.
+   Sections: Audio, Input, Pointer(aim), Net, Physics/Collision, Arena,
    Pickups, Player, Bullet, Game (host-authoritative), Rendering, UI wiring
    ========================================================================== */
 
@@ -261,36 +349,46 @@ const Audio_ = (() => {
   };
 })();
 
-/* ------------------------------- INPUT (keyboard) ------------------------------- */
+/* ------------------------------- INPUT (keyboard + virtual buttons) ------------------------------- */
 const Input = (() => {
   const held = new Set();
   const justPressed = new Set();
+
+  function press(norm) {
+    if (!held.has(norm)) justPressed.add(norm);
+    held.add(norm);
+  }
+  function release(norm) {
+    held.delete(norm);
+  }
+
   window.addEventListener('keydown', (e) => {
     const k = e.key;
     if (k === 'a' || k === 'A' || k === 'd' || k === 'D' || k === ' ') {
       e.preventDefault();
-      const norm = (k === ' ') ? ' ' : k.toLowerCase();
-      if (!held.has(norm)) justPressed.add(norm);
-      held.add(norm);
+      press((k === ' ') ? ' ' : k.toLowerCase());
     }
   });
   window.addEventListener('keyup', (e) => {
     const k = e.key;
-    const norm = (k === ' ') ? ' ' : k.toLowerCase();
-    held.delete(norm);
+    release((k === ' ') ? ' ' : k.toLowerCase());
   });
+
   return {
     isDown: (k) => held.has(k),
     wasPressed: (k) => justPressed.has(k),
-    clearFrame: () => justPressed.clear()
+    clearFrame: () => justPressed.clear(),
+    virtualPress: press,
+    virtualRelease: release
   };
 })();
 
-/* ------------------------------- MOUSE (aim + shoot) ------------------------------- */
+/* ------------------------------- POINTER (aim + shoot: mouse or touch) ------------------------------- */
 const Mouse = (() => {
   let x = CANVAS_W * 0.5, y = CANVAS_H * 0.5;
   let down = false;
   let justPressed = false;
+  let activePointerId = null;
 
   function toArenaCoords(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
@@ -299,18 +397,25 @@ const Mouse = (() => {
     return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
   }
 
-  window.addEventListener('mousemove', (e) => {
+  canvas.addEventListener('pointerdown', (e) => {
+    if (activePointerId !== null) return; // one active aim/shoot pointer at a time
+    activePointerId = e.pointerId;
+    const p = toArenaCoords(e.clientX, e.clientY);
+    x = p.x; y = p.y;
+    if (!down) justPressed = true;
+    down = true;
+    e.preventDefault();
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== activePointerId && !(activePointerId === null && e.pointerType === 'mouse')) return;
     const p = toArenaCoords(e.clientX, e.clientY);
     x = p.x; y = p.y;
   });
-  canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 0) {
-      if (!down) justPressed = true;
-      down = true;
-    }
+  window.addEventListener('pointerup', (e) => {
+    if (e.pointerId === activePointerId) { activePointerId = null; down = false; }
   });
-  window.addEventListener('mouseup', (e) => {
-    if (e.button === 0) down = false;
+  window.addEventListener('pointercancel', (e) => {
+    if (e.pointerId === activePointerId) { activePointerId = null; down = false; }
   });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -322,80 +427,81 @@ const Mouse = (() => {
   };
 })();
 
-/* ------------------------------- NET (WebRTC, peer-to-peer, no server) ------------------------------- */
-// Manual "copy the code" signaling over a data channel. A public STUN
-// server is used only for NAT traversal — no game data or backend involved.
+/* ------------------------------- NET (WebRTC via PeerJS, single-code connect) ------------------------------- */
+// PeerJS's free public cloud broker is used only to introduce the two
+// browsers (host shares one short peer ID, guest pastes it and connects).
+// Once connected, gameplay data flows directly peer-to-peer over WebRTC.
 const Net = {
-  pc: null,
-  channel: null,
+  peer: null,
+  conn: null,
   role: null, // 'host' | 'guest'
   onMessage: null,
   onOpen: null,
   onClose: null,
 
-  makePC() {
-    this.pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-    return this.pc;
+  _setupConn(conn) {
+    this.conn = conn;
+    conn.on('open', () => this.onOpen && this.onOpen());
+    conn.on('close', () => this.onClose && this.onClose());
+    conn.on('error', () => this.onClose && this.onClose());
+    conn.on('data', (data) => { this.onMessage && this.onMessage(data); });
   },
 
-  waitIceComplete(pc) {
-    return new Promise((resolve) => {
-      if (pc.iceGatheringState === 'complete') { resolve(); return; }
-      const check = () => {
-        if (pc.iceGatheringState === 'complete') {
-          pc.removeEventListener('icegatheringstatechange', check);
-          resolve();
-        }
-      };
-      pc.addEventListener('icegatheringstatechange', check);
-    });
+  // 4-digit codes are short enough to type by hand, but that also means two
+  // hosts could occasionally pick the same one on the shared broker — retry
+  // with a fresh code a few times if that happens.
+  _randomCode() {
+    return String(Math.floor(1000 + Math.random() * 9000));
   },
 
-  encode(obj) { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); },
-  decode(str) { return JSON.parse(decodeURIComponent(escape(atob(str.trim())))); },
-
-  setupChannel(ch) {
-    this.channel = ch;
-    ch.addEventListener('open', () => this.onOpen && this.onOpen());
-    ch.addEventListener('close', () => this.onClose && this.onClose());
-    ch.addEventListener('message', (e) => {
-      try { this.onMessage && this.onMessage(JSON.parse(e.data)); } catch (err) { /* ignore malformed */ }
-    });
-  },
-
-  async host() {
+  host() {
     this.role = 'host';
-    const pc = this.makePC();
-    const ch = pc.createDataChannel('game', { ordered: true });
-    this.setupChannel(ch);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await this.waitIceComplete(pc);
-    return this.encode(pc.localDescription);
+    return new Promise((resolve, reject) => {
+      const attempt = (triesLeft) => {
+        const code = 'ob-' + this._randomCode(); // namespaced so it can't collide with unrelated PeerJS apps
+        const peer = new Peer(code);
+        let settled = false;
+        peer.on('open', (id) => {
+          settled = true;
+          this.peer = peer;
+          resolve(id.replace('ob-', ''));
+        });
+        peer.on('error', (err) => {
+          if (settled) return;
+          if (err.type === 'unavailable-id' && triesLeft > 0) {
+            peer.destroy();
+            attempt(triesLeft - 1);
+          } else {
+            reject(err);
+          }
+        });
+        peer.on('connection', (conn) => this._setupConn(conn));
+        peer.on('disconnected', () => this.onClose && this.onClose());
+      };
+      attempt(8);
+    });
   },
 
-  async acceptAnswer(code) {
-    const desc = this.decode(code);
-    await this.pc.setRemoteDescription(desc);
-  },
-
-  async join(hostCode) {
+  join(hostId) {
     this.role = 'guest';
-    const pc = this.makePC();
-    pc.addEventListener('datachannel', (e) => this.setupChannel(e.channel));
-    const offer = this.decode(hostCode);
-    await pc.setRemoteDescription(offer);
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    await this.waitIceComplete(pc);
-    return this.encode(pc.localDescription);
+    return new Promise((resolve, reject) => {
+      const peer = new Peer();
+      peer.on('error', (err) => reject(err));
+      peer.on('open', () => {
+        this.peer = peer;
+        const conn = peer.connect('ob-' + hostId.trim(), { reliable: true });
+        conn.on('error', (err) => reject(err));
+        this._setupConn(conn);
+        resolve();
+      });
+    });
   },
 
   send(obj) {
-    if (this.channel && this.channel.readyState === 'open') this.channel.send(JSON.stringify(obj));
+    if (this.conn && this.conn.open) this.conn.send(obj);
   },
 
-  isOpen() { return !!this.channel && this.channel.readyState === 'open'; }
+  isOpen() { return !!this.conn && this.conn.open; }
 };
 
 /* ------------------------------- ARENA ------------------------------- */
@@ -497,7 +603,8 @@ class Pickup {
 /* ------------------------------- PLAYER ------------------------------- */
 // Controller shape consumed by Player.update: { left, right, jumpPressed,
 // shootPressed, aimTarget:{x,y} } — same shape whether it comes from local
-// mouse/keyboard or from a network message, so the sim code doesn't care.
+// input (keyboard/mouse/touch) or from a network message, so the sim code
+// doesn't care which device drove it.
 class Player {
   constructor(id, x, y, color) {
     this.id = id;
@@ -544,7 +651,7 @@ class Player {
     if (this.onGround && Math.abs(this.vx) > 10) this.walkCycle += dt * 10;
     else this.walkCycle += dt * 2;
 
-    // aim follows the cursor/target regardless of movement direction
+    // aim follows the cursor/touch target regardless of movement direction
     const shoulder = { x: this.x + this.w / 2, y: this.y + 20 };
     const target = controller.aimTarget || { x: shoulder.x + 100, y: shoulder.y };
     this.aim = computeAim(shoulder, target);
@@ -1265,11 +1372,11 @@ document.getElementById('hostBtn').addEventListener('click', async () => {
   const out = document.getElementById('hostCodeOut');
   out.value = ''; status.textContent = 'Generating code...';
   try {
-    const code = await Net.host();
-    out.value = code;
-    status.textContent = 'Send this code to the other player, then paste their response below.';
+    const id = await Net.host();
+    out.value = id;
+    status.textContent = 'Share this code. The match starts automatically once they connect.';
   } catch (e) {
-    status.textContent = 'Could not create a match on this device/browser.';
+    status.textContent = 'Could not create a match. Check your connection and try again.';
   }
 });
 
@@ -1277,42 +1384,28 @@ document.getElementById('joinBtn').addEventListener('click', () => {
   switchPanel(joinPanel);
   document.getElementById('joinStatus').textContent = '';
   document.getElementById('joinCodeIn').value = '';
-  document.getElementById('joinCodeOut').value = '';
+});
+document.getElementById('joinCodeIn').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
 });
 
 /* ---- host flow ---- */
 document.getElementById('copyHostCode').addEventListener('click', () => {
   copyToClipboard(document.getElementById('hostCodeOut'));
 });
-document.getElementById('hostConnectBtn').addEventListener('click', async () => {
-  const status = document.getElementById('hostStatus');
-  const answer = document.getElementById('hostAnswerIn').value.trim();
-  if (!answer) { status.textContent = 'Paste the response code first.'; return; }
-  status.textContent = 'Connecting...';
-  try {
-    await Net.acceptAnswer(answer);
-    status.textContent = 'Waiting for connection to open...';
-  } catch (e) {
-    status.textContent = 'That code looks invalid. Double-check and try again.';
-  }
-});
 document.getElementById('hostBackBtn').addEventListener('click', () => location.reload());
 
-/* ---- join flow ---- */
-document.getElementById('copyJoinCode').addEventListener('click', () => {
-  copyToClipboard(document.getElementById('joinCodeOut'));
-});
-document.getElementById('joinGenerateBtn').addEventListener('click', async () => {
+/* ---- join flow (single code, connects immediately) ---- */
+document.getElementById('joinConnectBtn').addEventListener('click', async () => {
   const status = document.getElementById('joinStatus');
-  const hostCode = document.getElementById('joinCodeIn').value.trim();
-  if (!hostCode) { status.textContent = 'Paste the host code first.'; return; }
-  status.textContent = 'Generating response code...';
+  const hostId = document.getElementById('joinCodeIn').value.trim();
+  if (hostId.length !== 4) { status.textContent = 'Enter the 4-digit code first.'; return; }
+  status.textContent = 'Connecting...';
   try {
-    const answer = await Net.join(hostCode);
-    document.getElementById('joinCodeOut').value = answer;
-    status.textContent = 'Send this back to the host, then wait for the match to start.';
+    await Net.join(hostId);
+    status.textContent = 'Connected! Starting match...';
   } catch (e) {
-    status.textContent = 'That code looks invalid. Double-check and try again.';
+    status.textContent = 'Could not connect. Double-check the code and try again.';
   }
 });
 document.getElementById('joinBackBtn').addEventListener('click', () => location.reload());
@@ -1330,6 +1423,19 @@ document.getElementById('rematchBtn').addEventListener('click', () => {
 });
 document.getElementById('menuBtn').addEventListener('click', () => location.reload());
 document.getElementById('reloadBtn').addEventListener('click', () => location.reload());
+
+/* ---- on-screen touch controls (phones/tablets) ---- */
+function bindHold(el, key) {
+  const start = (e) => { e.preventDefault(); el.classList.add('active'); Input.virtualPress(key); };
+  const end = (e) => { e.preventDefault(); el.classList.remove('active'); Input.virtualRelease(key); };
+  el.addEventListener('pointerdown', start);
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+  el.addEventListener('pointerleave', end);
+}
+bindHold(document.getElementById('btnLeft'), 'a');
+bindHold(document.getElementById('btnRight'), 'd');
+bindHold(document.getElementById('btnJump'), ' ');
 
 /* ---- idle preview behind the lobby ---- */
 (function idlePreview() {
