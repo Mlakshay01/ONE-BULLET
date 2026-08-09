@@ -8,8 +8,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%;
-    background: #0b0c10;
-    color: #e8e8f0;
+    background: #08090c;
+    color: #e6e7ec;
     font-family: 'Segoe UI', Arial, sans-serif;
     overflow: hidden;
     overscroll-behavior: none;
@@ -33,141 +33,14 @@
     width: 100%;
     height: 100%;
     display: block;
-    background: #12141c;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 0 50px rgba(0,0,0,0.6);
-    cursor: crosshair;
+    background: #101116;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 0 40px rgba(0,0,0,0.55);
     touch-action: none;
   }
 
-  .overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    background: rgba(8,9,13,0.92);
-    border-radius: 10px;
-    backdrop-filter: blur(3px);
-    text-align: center;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 40;
-  }
-  .overlay.show { display: flex; }
-
-  .game-title {
-    font-size: clamp(26px, 5vw, 44px);
-    font-weight: 800;
-    letter-spacing: 8px;
-    background: linear-gradient(90deg, #35d8ff, #ff5d3d);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-shadow: 0 0 30px rgba(53,216,255,0.15);
-    margin-bottom: 4px;
-  }
-
-  .rule-note {
-    max-width: 520px;
-    font-size: 12.5px;
-    color: #8f93a8;
-    letter-spacing: 0.3px;
-    line-height: 1.55;
-  }
-  .rule-note b { color: #ffd08a; }
-
-  button {
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 11px 28px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.05);
-    color: #e8e8f0;
-    transition: all 0.15s ease;
-  }
-  button:hover {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.3);
-    transform: translateY(-1px);
-  }
-  button.primary {
-    background: linear-gradient(90deg, rgba(53,216,255,0.18), rgba(255,93,61,0.18));
-    border-color: rgba(255,255,255,0.25);
-  }
-  button.link-btn {
-    background: transparent;
-    border: none;
-    color: #8f93a8;
-    text-decoration: underline;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    padding: 4px;
-  }
-  button.small { padding: 7px 16px; font-size: 11px; }
-
-  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-
-  #lobbyPanels { width: 100%; max-width: 480px; }
-  .lobby-panel { display: none; flex-direction: column; gap: 8px; width: 100%; }
-  .lobby-panel.show { display: flex; }
-  .lobby-label { font-size: 12px; color: #b6bad0; text-align: left; letter-spacing: 0.5px; margin-top: 4px; }
-  textarea.code-box, input.code-box {
-    width: 100%;
-    height: 44px;
-    resize: none;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
-    color: #ffe27a;
-    font-family: 'Consolas', monospace;
-    font-size: 13px;
-    padding: 8px;
-    word-break: break-all;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-  input.code-box { text-transform: none; }
-  #hostCodeOut {
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 10px;
-    height: 56px;
-  }
-  #joinCodeIn {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 10px;
-    height: 56px;
-  }
-  .status-line {
-    font-size: 12.5px;
-    color: #35d8ff;
-    min-height: 18px;
-    letter-spacing: 0.3px;
-  }
-
-  .winText {
-    font-size: clamp(24px, 4.5vw, 38px);
-    font-weight: 800;
-    letter-spacing: 3px;
-  }
-  .winText.p1 { color: #35d8ff; text-shadow: 0 0 25px #35d8ff; }
-  .winText.p2 { color: #ff5d3d; text-shadow: 0 0 25px #ff5d3d; }
-
-  /* ---------------- force landscape on phones (CSS rotation trick) ----------------
-     Most mobile browsers (iOS Safari especially) don't support locking screen
-     orientation from a plain web page, so instead we rotate the whole game
-     container to fill the portrait viewport in a landscape layout. The user
-     can hold the phone naturally; the game just renders sideways to fit. */
+  /* -------- forced landscape on phones (CSS rotation trick) -------- */
   @media (orientation: portrait) and (pointer: coarse) {
     #gameContainer {
       position: fixed;
@@ -179,139 +52,264 @@
     }
   }
 
-  /* ---------------- aim hint (touch only, fades after a few seconds) ---------------- */
-  .aim-hint {
-    display: none;
+  .overlay {
     position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.55);
-    color: #b6bad0;
-    font-size: 10.5px;
-    letter-spacing: 0.4px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    pointer-events: none;
-    z-index: 45;
-    white-space: nowrap;
-    opacity: 0;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(6,7,10,0.94);
+    border-radius: 8px;
+    text-align: center;
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 40;
   }
-  @media (pointer: coarse) {
-    .aim-hint {
-      display: block;
-    }
+  .overlay.show { display: flex; }
+
+  .game-title {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 800;
+    letter-spacing: 9px;
+    background: linear-gradient(90deg, #4dd8e8, #ff7a52);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
-  .aim-hint.show {
-    animation: aimHintFade 4.5s ease forwards;
-  }
-  @keyframes aimHintFade {
-    0%   { opacity: 0; }
-    10%  { opacity: 1; }
-    75%  { opacity: 1; }
-    100% { opacity: 0; }
+  .tagline {
+    font-size: 12.5px;
+    color: #9298ab;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    margin-bottom: 4px;
   }
 
-  /* ---------------- touch controls (phones/tablets) ---------------- */
+  .controls-legend {
+    max-width: 520px;
+    font-size: 11px;
+    color: #7d8296;
+    letter-spacing: 0.2px;
+    line-height: 1.7;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .controls-legend b.p1 { color: #4dd8e8; }
+  .controls-legend b.p2 { color: #ff8a5c; }
+
+  button {
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    padding: 11px 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    color: #e6e7ec;
+    transition: all 0.15s ease;
+  }
+  button:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.28);
+  }
+  button.primary {
+    background: linear-gradient(90deg, rgba(77,216,232,0.16), rgba(255,122,82,0.16));
+    border-color: rgba(255,255,255,0.22);
+  }
+  button.link-btn {
+    background: transparent;
+    border: none;
+    color: #7d8296;
+    text-decoration: underline;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 4px;
+  }
+  button.small { padding: 6px 14px; font-size: 10.5px; }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  #lobbyPanels { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .lobby-panel { display: none; flex-direction: column; gap: 8px; width: 100%; }
+  .lobby-panel.show { display: flex; }
+  .lobby-label { font-size: 11.5px; color: #a7abbd; text-align: left; letter-spacing: 0.4px; margin-top: 2px; }
+  input.code-box {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #ffcf8a;
+    font-family: 'Consolas', monospace;
+    text-align: center;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+  }
+  #hostCodeOut { font-size: 28px; font-weight: 800; height: 54px; }
+  #joinCodeIn { font-size: 24px; font-weight: 800; height: 54px; }
+  .status-line { font-size: 12px; color: #4dd8e8; min-height: 18px; letter-spacing: 0.3px; }
+
+  .winText {
+    font-size: clamp(24px, 4.5vw, 38px);
+    font-weight: 800;
+    letter-spacing: 3px;
+  }
+  .winText.p1 { color: #4dd8e8; text-shadow: 0 0 22px rgba(77,216,232,0.5); }
+  .winText.p2 { color: #ff7a52; text-shadow: 0 0 22px rgba(255,122,82,0.5); }
+
+  /* -------- countdown -------- */
+  #countdownOverlay {
+    position: absolute; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 35;
+    pointer-events: none;
+  }
+  #countdownOverlay.show { display: flex; }
+  #countdownText {
+    font-size: clamp(48px, 12vw, 96px);
+    font-weight: 800;
+    color: #f0f1f5;
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(0,0,0,0.6);
+  }
+
+  /* -------- HUD -------- */
+  .hud {
+    position: absolute;
+    top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 20;
+    background: rgba(0,0,0,0.35);
+    padding: 5px 10px;
+    border-radius: 5px;
+    pointer-events: none;
+  }
+  #hudP1 { left: 10px; color: #4dd8e8; }
+  #hudP2 { right: 10px; color: #ff8a5c; }
+  .hud-dot { font-size: 13px; }
+
+  /* -------- fullscreen button -------- */
+  #fullscreenBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px; height: 34px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e6e7ec;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    z-index: 50;
+    letter-spacing: 0;
+  }
+
+  /* -------- touch controls -------- */
   .touch-controls {
     display: none;
     position: absolute;
     left: 0; right: 0; bottom: 0;
-    padding: max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    padding: max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
     justify-content: space-between;
     align-items: flex-end;
     z-index: 30;
     pointer-events: none;
   }
-  .touch-move { display: flex; gap: 12px; pointer-events: auto; }
+  .touch-controls.active { display: flex; }
+  .touch-move { display: flex; gap: 10px; pointer-events: auto; }
+  .touch-right { display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto; }
   .touch-btn {
-    width: 66px; height: 66px;
     border-radius: 50%;
-    background: rgba(53,216,255,0.10);
-    border: 1.5px solid rgba(53,216,255,0.35);
-    color: #e8e8f0;
-    font-size: 22px;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.2);
+    color: #e6e7ec;
     display: flex; align-items: center; justify-content: center;
     -webkit-user-select: none; user-select: none;
     touch-action: none;
     padding: 0;
-    box-shadow: 0 0 14px rgba(53,216,255,0.08);
+    font-size: 18px;
   }
-  .touch-btn:active, .touch-btn.active {
-    background: rgba(53,216,255,0.28);
-    box-shadow: 0 0 20px rgba(53,216,255,0.25);
-  }
-  .jump-btn {
-    width: 84px; height: 84px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    pointer-events: auto;
+  .touch-btn:active, .touch-btn.active { background: rgba(255,255,255,0.22); }
+  .btn-move { width: 60px; height: 60px; }
+  .btn-mini { width: 44px; height: 44px; font-size: 14px; background: rgba(77,216,232,0.1); border-color: rgba(77,216,232,0.3); }
+  .btn-mini.down { background: rgba(255,122,82,0.1); border-color: rgba(255,122,82,0.3); }
+  .btn-shoot {
+    width: 74px; height: 74px;
+    font-size: 11px; font-weight: 800; letter-spacing: 1px;
     background: rgba(255,224,138,0.12);
     border-color: rgba(255,224,138,0.4);
-    box-shadow: 0 0 14px rgba(255,224,138,0.1);
   }
-  .jump-btn:active, .jump-btn.active {
-    background: rgba(255,224,138,0.3);
-    box-shadow: 0 0 22px rgba(255,224,138,0.28);
-  }
-  @media (pointer: coarse) {
-    .touch-controls { display: flex; }
-  }
+  .btn-shoot:active, .btn-shoot.active { background: rgba(255,224,138,0.3); }
 </style>
 </head>
 <body>
 
 <div id="gameContainer">
   <canvas id="canvas" width="960" height="540"></canvas>
-  <div class="aim-hint" id="aimHint">Drag to aim • Release to fire</div>
 
-  <!-- TOUCH CONTROLS: drag/tap on the arena itself to aim + fire -->
+  <div id="hudP1" class="hud"><span class="hud-dot" id="hudDot1">&#9679;</span><span>P1 READY</span></div>
+  <div id="hudP2" class="hud"><span>P2 READY</span><span class="hud-dot" id="hudDot2">&#9679;</span></div>
+
+  <button id="fullscreenBtn" title="Fullscreen">&#9974;</button>
+
+  <div id="countdownOverlay"><div id="countdownText">3</div></div>
+
+  <!-- TOUCH CONTROLS -->
   <div id="touchControls" class="touch-controls">
     <div class="touch-move">
-      <button id="btnLeft" class="touch-btn">&#9664;</button>
-      <button id="btnRight" class="touch-btn">&#9654;</button>
+      <button id="btnLeft" class="touch-btn btn-move">&#9664;</button>
+      <button id="btnRight" class="touch-btn btn-move">&#9654;</button>
     </div>
-    <button id="btnJump" class="touch-btn jump-btn">&#9650;<br>JUMP</button>
+    <div class="touch-right">
+      <button id="btnAimUp" class="touch-btn btn-mini">&#9650;</button>
+      <button id="btnShoot" class="touch-btn btn-shoot">FIRE</button>
+      <button id="btnAimDown" class="touch-btn btn-mini down">&#9660;</button>
+    </div>
   </div>
 
-  <!-- START / LOBBY SCREEN -->
+  <!-- START / LOBBY -->
   <div id="startOverlay" class="overlay show">
     <div class="game-title">ONE BULLET</div>
+    <div class="tagline">One bullet. Make it count.</div>
 
     <div id="lobbyPanels">
-      <!-- Main menu -->
+      <div class="controls-legend">
+        <b class="p1">P1</b> — A/D move · W jump (hold to aim up) · S hold to aim down · F shoot<br>
+        <b class="p2">P2</b> — &larr;/&rarr; move · &uarr; jump (hold to aim up) · &darr; hold to aim down · L shoot<br>
+        Online: either key set works — you always control your own player.
+      </div>
+
       <div id="menuPanel" class="lobby-panel show">
-        <div class="rule-note">
-          Real 2-player multiplayer — <b>one person hosts, the other joins</b> with a single
-          <b>4-digit code</b> (peer-to-peer, no account needed). Each player plays on their own device.
-          <b>Desktop:</b> A / D move, Space jump, mouse aims &amp; shoots. <b>Phone:</b> use the
-          on-screen arrows and JUMP button to move, drag anywhere on the arena to aim, then lift
-          your finger to fire.
-          You carry <b>one bullet</b> — fire it and you're empty until you reload. Bullets
-          <b>ricochet once</b> off a wall or the arena edge, then gravity always pulls them down
-          to rest on the ground. Walk up to a spent bullet to reload, or if you're unarmed, fire
-          near one to <b>kick it away</b> instead.
-        </div>
         <div class="btn-row">
-          <button id="hostBtn" class="primary">Host Match</button>
-          <button id="joinBtn">Join Match</button>
+          <button id="localBtn" class="primary">Local 1v1</button>
+          <button id="hostBtn">Create Room</button>
+          <button id="joinBtn">Join Room</button>
         </div>
       </div>
 
-      <!-- Host flow -->
       <div id="hostPanel" class="lobby-panel">
-        <p class="lobby-label">Send this code to the other player:</p>
-        <textarea id="hostCodeOut" class="code-box" readonly placeholder="Generating..." rows="1"></textarea>
+        <p class="lobby-label">Give this room code to the other player:</p>
+        <input id="hostCodeOut" class="code-box" readonly placeholder="-----">
         <button id="copyHostCode" class="small">Copy Code</button>
         <p id="hostStatus" class="status-line"></p>
         <button id="hostBackBtn" class="link-btn">&larr; Back</button>
       </div>
 
-      <!-- Join flow -->
       <div id="joinPanel" class="lobby-panel">
-        <p class="lobby-label">Paste the host's code here:</p>
-        <input id="joinCodeIn" class="code-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <p class="lobby-label">Enter the room code:</p>
+        <input id="joinCodeIn" class="code-box" type="text" maxlength="5" placeholder="-----" autocomplete="off" autocapitalize="characters" spellcheck="false">
         <button id="joinConnectBtn" class="primary">Connect</button>
         <p id="joinStatus" class="status-line"></p>
         <button id="joinBackBtn" class="link-btn">&larr; Back</button>
@@ -338,12 +336,11 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 /* ==========================================================================
-   ONE BULLET — peer-to-peer 2-player shooter (single HTML file, no custom
-   backend). Networking uses PeerJS's public cloud broker only to introduce
-   the two players with a single short code; gameplay data flows directly
-   peer-to-peer over WebRTC once connected.
-   Sections: Audio, Input, Pointer(aim), Net, Physics/Collision, Arena,
-   Pickups, Player, Bullet, Game (host-authoritative), Rendering, UI wiring
+   ONE BULLET — a small competitive game built around a single rule:
+   you have exactly one bullet. It is your weapon, your objective, and
+   your weakness. Systems below: Audio, Input, Net (hidden behind a 5-char
+   room code), Physics/Collision, Arena, Portals, Player, Bullet
+   (ricochet/retrieval/denial), Game (round + simulation), Rendering, UI.
    ========================================================================== */
 
 const CANVAS_W = 960, CANVAS_H = 540;
@@ -352,65 +349,55 @@ const ctx = canvas.getContext('2d');
 
 /* ------------------------------- AUDIO ------------------------------- */
 const Audio_ = (() => {
-  let ctxAudio = null;
+  let ac = null;
   function ensure() {
-    if (!ctxAudio) {
-      try { ctxAudio = new (window.AudioContext || window.webkitAudioContext)(); }
-      catch (e) { ctxAudio = null; }
-    }
-    return ctxAudio;
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    return ac;
   }
-  function tone(freq, dur, type = 'square', vol = 0.08, sweepTo = null) {
-    const ac = ensure();
-    if (!ac) return;
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
+  function tone(freq, dur, type = 'square', vol = 0.08, sweepTo = null, delay = 0) {
+    const ctxA = ensure();
+    if (!ctxA) return;
+    const t0 = ctxA.currentTime + delay;
+    const osc = ctxA.createOscillator();
+    const gain = ctxA.createGain();
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, ac.currentTime);
-    if (sweepTo !== null) osc.frequency.exponentialRampToValueAtTime(sweepTo, ac.currentTime + dur);
-    gain.gain.setValueAtTime(vol, ac.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
-    osc.connect(gain).connect(ac.destination);
-    osc.start();
-    osc.stop(ac.currentTime + dur);
+    osc.frequency.setValueAtTime(freq, t0);
+    if (sweepTo !== null) osc.frequency.exponentialRampToValueAtTime(sweepTo, t0 + dur);
+    gain.gain.setValueAtTime(vol, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(gain).connect(ctxA.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur);
   }
   return {
-    jump: () => tone(320, 0.12, 'square', 0.07, 480),
-    shoot: () => tone(900, 0.07, 'square', 0.06, 200),
-    hit: () => tone(160, 0.28, 'sawtooth', 0.12, 40),
-    bounce: () => tone(500, 0.05, 'triangle', 0.05, 700),
-    kick: () => tone(240, 0.09, 'square', 0.07, 90),
-    pickup: () => tone(700, 0.1, 'sine', 0.06, 1100),
-    empty: () => tone(150, 0.06, 'square', 0.04, 100),
+    jump: () => tone(300, 0.1, 'square', 0.06, 460),
+    shoot: () => tone(950, 0.06, 'square', 0.07, 220),
+    bounce: () => tone(520, 0.05, 'triangle', 0.05, 720),
+    land: () => tone(200, 0.05, 'sine', 0.04, 120),
+    pickup: () => tone(720, 0.1, 'sine', 0.06, 1150),
+    denial: () => tone(260, 0.08, 'sawtooth', 0.07, 140),
+    hit: () => tone(150, 0.3, 'sawtooth', 0.13, 35),
+    portal: () => tone(600, 0.12, 'sine', 0.05, 1400),
+    victory: () => { tone(500, 0.12, 'square', 0.07, 700, 0); tone(700, 0.16, 'square', 0.07, 1000, 0.12); },
     resume: () => ensure()
   };
 })();
 
-/* ------------------------------- INPUT (keyboard + virtual buttons) ------------------------------- */
+/* ------------------------------- INPUT ------------------------------- */
 const Input = (() => {
   const held = new Set();
   const justPressed = new Set();
-
-  function press(norm) {
-    if (!held.has(norm)) justPressed.add(norm);
-    held.add(norm);
-  }
-  function release(norm) {
-    held.delete(norm);
-  }
-
+  function press(k) { if (!held.has(k)) justPressed.add(k); held.add(k); }
+  function release(k) { held.delete(k); }
+  const trackedKeys = new Set(['a','d','w','s','f','l','arrowleft','arrowright','arrowup','arrowdown']);
   window.addEventListener('keydown', (e) => {
-    const k = e.key;
-    if (k === 'a' || k === 'A' || k === 'd' || k === 'D' || k === ' ') {
-      e.preventDefault();
-      press((k === ' ') ? ' ' : k.toLowerCase());
-    }
+    const k = e.key.toLowerCase();
+    if (trackedKeys.has(k)) { e.preventDefault(); press(k); }
   });
   window.addEventListener('keyup', (e) => {
-    const k = e.key;
-    release((k === ' ') ? ' ' : k.toLowerCase());
+    const k = e.key.toLowerCase();
+    if (trackedKeys.has(k)) release(k);
   });
-
   return {
     isDown: (k) => held.has(k),
     wasPressed: (k) => justPressed.has(k),
@@ -420,70 +407,40 @@ const Input = (() => {
   };
 })();
 
-/* ------------------------------- POINTER (aim + shoot: mouse or touch) ------------------------------- */
-const Mouse = (() => {
-  let x = CANVAS_W * 0.5, y = CANVAS_H * 0.5;
-  let down = false;
-  let justPressed = false;
-  let activePointerId = null;
-  let isTouchAim = false;
-
-  function toArenaCoords(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = CANVAS_W / rect.width;
-    const scaleY = CANVAS_H / rect.height;
-    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-  }
-
-  canvas.addEventListener('pointerdown', (e) => {
-    if (activePointerId !== null) return; // one active aim/shoot pointer at a time
-    activePointerId = e.pointerId;
-    isTouchAim = (e.pointerType === 'touch' || e.pointerType === 'pen');
-    const p = toArenaCoords(e.clientX, e.clientY);
-    x = p.x; y = p.y;
-    if (!isTouchAim) {
-      // mouse: classic click-to-fire, immediately
-      if (!down) justPressed = true;
-      down = true;
-    }
-    // touch/pen: this just starts aiming — the shot fires on release (see pointerup)
-    e.preventDefault();
-  });
-  window.addEventListener('pointermove', (e) => {
-    if (e.pointerId !== activePointerId && !(activePointerId === null && e.pointerType === 'mouse')) return;
-    const p = toArenaCoords(e.clientX, e.clientY);
-    x = p.x; y = p.y;
-  });
-  window.addEventListener('pointerup', (e) => {
-    if (e.pointerId !== activePointerId) return;
-    if (isTouchAim) justPressed = true; // touch/pen: fire now, aimed at the last drag position
-    activePointerId = null;
-    down = false;
-  });
-  window.addEventListener('pointercancel', (e) => {
-    if (e.pointerId === activePointerId) { activePointerId = null; down = false; }
-  });
-  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
+function buildController(leftK, rightK, jumpK, shootK, downK) {
   return {
-    pos: () => ({ x, y }),
-    isDown: () => down,
-    wasPressed: () => justPressed,
-    clearFrame: () => { justPressed = false; }
+    left: Input.isDown(leftK),
+    right: Input.isDown(rightK),
+    jumpPressed: Input.wasPressed(jumpK),
+    shootPressed: Input.wasPressed(shootK),
+    aimUp: Input.isDown(jumpK),
+    aimDown: Input.isDown(downK)
   };
-})();
+}
+function getP1Controller() { return buildController('a', 'd', 'w', 'f', 's'); }
+function getP2Controller() { return buildController('arrowleft', 'arrowright', 'arrowup', 'l', 'arrowdown'); }
+function getUnifiedController() {
+  return {
+    left: Input.isDown('a') || Input.isDown('arrowleft'),
+    right: Input.isDown('d') || Input.isDown('arrowright'),
+    jumpPressed: Input.wasPressed('w') || Input.wasPressed('arrowup'),
+    shootPressed: Input.wasPressed('f') || Input.wasPressed('l'),
+    aimUp: Input.isDown('w') || Input.isDown('arrowup'),
+    aimDown: Input.isDown('s') || Input.isDown('arrowdown')
+  };
+}
 
-/* ------------------------------- NET (WebRTC via PeerJS, single-code connect) ------------------------------- */
-// PeerJS's free public cloud broker is used only to introduce the two
-// browsers (host shares one short peer ID, guest pastes it and connects).
-// Once connected, gameplay data flows directly peer-to-peer over WebRTC.
+/* ------------------------------- NET (hidden behind a 5-char room code) ------------------------------- */
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function randomRoomCode() {
+  let s = '';
+  for (let i = 0; i < 5; i++) s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+  return s;
+}
+
 const Net = {
-  peer: null,
-  conn: null,
-  role: null, // 'host' | 'guest'
-  onMessage: null,
-  onOpen: null,
-  onClose: null,
+  peer: null, conn: null, role: null,
+  onMessage: null, onOpen: null, onClose: null,
 
   _setupConn(conn) {
     this.conn = conn;
@@ -493,33 +450,18 @@ const Net = {
     conn.on('data', (data) => { this.onMessage && this.onMessage(data); });
   },
 
-  // 4-digit codes are short enough to type by hand, but that also means two
-  // hosts could occasionally pick the same one on the shared broker — retry
-  // with a fresh code a few times if that happens.
-  _randomCode() {
-    return String(Math.floor(1000 + Math.random() * 9000));
-  },
-
   host() {
     this.role = 'host';
     return new Promise((resolve, reject) => {
       const attempt = (triesLeft) => {
-        const code = 'ob-' + this._randomCode(); // namespaced so it can't collide with unrelated PeerJS apps
-        const peer = new Peer(code);
+        const code = randomRoomCode();
+        const peer = new Peer('ob-' + code);
         let settled = false;
-        peer.on('open', (id) => {
-          settled = true;
-          this.peer = peer;
-          resolve(id.replace('ob-', ''));
-        });
+        peer.on('open', () => { settled = true; this.peer = peer; resolve(code); });
         peer.on('error', (err) => {
           if (settled) return;
-          if (err.type === 'unavailable-id' && triesLeft > 0) {
-            peer.destroy();
-            attempt(triesLeft - 1);
-          } else {
-            reject(err);
-          }
+          if (err.type === 'unavailable-id' && triesLeft > 0) { peer.destroy(); attempt(triesLeft - 1); }
+          else reject(err);
         });
         peer.on('connection', (conn) => this._setupConn(conn));
         peer.on('disconnected', () => this.onClose && this.onClose());
@@ -528,14 +470,14 @@ const Net = {
     });
   },
 
-  join(hostId) {
+  join(code) {
     this.role = 'guest';
     return new Promise((resolve, reject) => {
       const peer = new Peer();
       peer.on('error', (err) => reject(err));
       peer.on('open', () => {
         this.peer = peer;
-        const conn = peer.connect('ob-' + hostId.trim(), { reliable: true });
+        const conn = peer.connect('ob-' + code.trim().toUpperCase(), { reliable: true });
         conn.on('error', (err) => reject(err));
         this._setupConn(conn);
         resolve();
@@ -543,136 +485,119 @@ const Net = {
     });
   },
 
-  send(obj) {
-    if (this.conn && this.conn.open) this.conn.send(obj);
-  },
-
+  send(obj) { if (this.conn && this.conn.open) this.conn.send(obj); },
   isOpen() { return !!this.conn && this.conn.open; }
 };
 
-/* ------------------------------- ARENA ------------------------------- */
-// Every obstacle is low enough to jump over, so players can always close
-// distance and fight face to face rather than being permanently split.
-const arena = {
-  rects: [
-    { x: 0,   y: 500, w: 960, h: 40, type: 'floor' },
-    { x: 100, y: 380, w: 170, h: 20, type: 'platform' },
-    { x: 690, y: 380, w: 170, h: 20, type: 'platform' },
-    { x: 440, y: 430, w: 80,  h: 70, type: 'wall' },
-    { x: 250, y: 460, w: 55,  h: 40, type: 'cover' },
-    { x: 655, y: 460, w: 55,  h: 40, type: 'cover' }
-  ]
-};
-
-const PICKUP_SPAWNS = [
-  { x: 185, y: 358 },
-  { x: 775, y: 358 },
-  { x: 480, y: 408 }
-];
-const PICKUP_RESPAWN_TIME = 4.5;
-
-/* ------------------------------- PHYSICS ------------------------------- */
+/* ------------------------------- PHYSICS / COLLISION ------------------------------- */
 const PHYSICS = {
-  gravity: 1500,
-  accel: 2600,
-  maxSpeed: 260,
-  friction: 2200,
-  jumpVelocity: -680, // strong enough to reach every platform directly, with margin
-  terminalVelocity: 900
+  gravity: 1500, accel: 2600, maxSpeed: 260, friction: 2200,
+  jumpVelocity: -680, terminalVelocity: 900
 };
 
 function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-function moveAndCollide(box, dt) {
+function moveAndCollide(box, dt, rects) {
   box.x += box.vx * dt;
   box.x = Math.max(0, Math.min(CANVAS_W - box.w, box.x));
-  for (const r of arena.rects) {
+  for (const r of rects) {
     if (overlap(box, r)) {
       if (box.vx > 0) box.x = r.x - box.w;
       else if (box.vx < 0) box.x = r.x + r.w;
       box.vx = 0;
     }
   }
-
+  const wasFalling = box.vy > 40;
   box.onGround = false;
   box.y += box.vy * dt;
-  for (const r of arena.rects) {
+  for (const r of rects) {
     if (overlap(box, r)) {
-      if (box.vy > 0) { box.y = r.y - box.h; box.onGround = true; }
+      if (box.vy > 0) { box.y = r.y - box.h; box.onGround = true; if (wasFalling) Audio_.land(); }
       else if (box.vy < 0) { box.y = r.y + r.h; }
       box.vy = 0;
     }
   }
   if (box.y + box.h > CANVAS_H) {
-    box.y = CANVAS_H - box.h;
-    box.vy = 0;
-    box.onGround = true;
+    box.y = CANVAS_H - box.h; box.vy = 0; box.onGround = true;
   }
 }
 
-// Aim helpers shared by simulation (host) and rendering (host + guest)
-function computeAim(shoulder, target) {
-  const dx = target.x - shoulder.x;
-  const dy = target.y - shoulder.y;
-  const len = Math.hypot(dx, dy) || 1;
-  return { x: dx / len, y: dy / len };
-}
-function computeMuzzle(shoulder, aim) {
-  const armLen = 20;
-  return { x: shoulder.x + aim.x * armLen, y: shoulder.y + aim.y * armLen };
-}
+/* ------------------------------- ARENA (one handcrafted, symmetric layout) ------------------------------- */
+const arena = {
+  rects: [
+    { x: 0,   y: 500, w: 960, h: 40, type: 'floor' },
+    { x: 70,  y: 392, w: 200, h: 18, type: 'platform' },
+    { x: 690, y: 392, w: 200, h: 18, type: 'platform' },
+    { x: 455, y: 300, w: 50,  h: 200, type: 'pillar' },
+    { x: 435, y: 284, w: 90,  h: 16, type: 'platform' },
+    { x: 230, y: 452, w: 60,  h: 48, type: 'cover' },
+    { x: 670, y: 452, w: 60,  h: 48, type: 'cover' }
+  ]
+};
+const portals = [
+  { x: 170, y: 366, r: 22, spinT: 0 },
+  { x: 790, y: 366, r: 22, spinT: 0 }
+];
+const SPAWN = { p1: { x: 90, y: 446 }, p2: { x: 846, y: 446 } };
 
-/* ------------------------------- PICKUP ------------------------------- */
-class Pickup {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.r = 9;
-    this.available = true;
-    this.respawnTimer = 0;
-    this.bob = Math.random() * Math.PI * 2;
-  }
-  update(dt) {
-    this.bob += dt * 3;
-    if (!this.available) {
-      this.respawnTimer -= dt;
-      if (this.respawnTimer <= 0) this.available = true;
+function otherPortal(p) { return p === portals[0] ? portals[1] : portals[0]; }
+
+function tryPortalPlayer(p, dt) {
+  if (p.portalCooldown > 0) { p.portalCooldown -= dt; return; }
+  const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+  for (const portal of portals) {
+    if (Math.hypot(cx - portal.x, cy - portal.y) < portal.r) {
+      const dest = otherPortal(portal);
+      p.x = dest.x - p.w / 2;
+      p.y = dest.y - p.h / 2;
+      p.portalCooldown = 0.45;
+      Audio_.portal();
+      return;
     }
   }
-  take() {
-    this.available = false;
-    this.respawnTimer = PICKUP_RESPAWN_TIME;
+}
+function tryPortalBullet(b, dt) {
+  if (b.portalCooldown > 0) { b.portalCooldown -= dt; return; }
+  for (const portal of portals) {
+    if (Math.hypot(b.x - portal.x, b.y - portal.y) < portal.r) {
+      const dest = otherPortal(portal);
+      b.x = dest.x; b.y = dest.y;
+      b.trail = [];
+      b.portalCooldown = 0.2;
+      Audio_.portal();
+      return;
+    }
   }
 }
 
 /* ------------------------------- PLAYER ------------------------------- */
-// Controller shape consumed by Player.update: { left, right, jumpPressed,
-// shootPressed, aimTarget:{x,y} } — same shape whether it comes from local
-// input (keyboard/mouse/touch) or from a network message, so the sim code
-// doesn't care which device drove it.
 class Player {
-  constructor(id, x, y, color) {
+  constructor(id, x, y, color, facing) {
     this.id = id;
     this.x = x; this.y = y;
-    this.w = 24; this.h = 54;
+    this.w = 22; this.h = 52;
     this.vx = 0; this.vy = 0;
     this.onGround = false;
     this.color = color;
     this.alive = true;
     this.ammo = 1;
-    this.aim = { x: 1, y: 0 };
-    this.muzzle = { x: x + this.w / 2 + 20, y: y + 20 };
+    this.facing = facing;
+    this.aimUp = false; this.aimDown = false;
+    this.aim = { x: facing, y: 0 };
     this.muzzleFlash = 0;
+    this.recoil = 0;
     this.walkCycle = 0;
+    this.portalCooldown = 0;
   }
 
   update(dt, game, controller) {
     if (!this.alive) return;
 
     let moveDir = 0;
-    if (controller.left) moveDir -= 1;
-    if (controller.right) moveDir += 1;
+    if (controller.left) { moveDir -= 1; this.facing = -1; }
+    if (controller.right) { moveDir += 1; this.facing = 1; }
 
     if (moveDir !== 0) {
       this.vx += moveDir * PHYSICS.accel * dt;
@@ -692,104 +617,72 @@ class Player {
     this.vy += PHYSICS.gravity * dt;
     this.vy = Math.min(this.vy, PHYSICS.terminalVelocity);
 
-    moveAndCollide(this, dt);
+    moveAndCollide(this, dt, arena.rects);
+    tryPortalPlayer(this, dt);
 
     if (this.onGround && Math.abs(this.vx) > 10) this.walkCycle += dt * 10;
     else this.walkCycle += dt * 2;
 
-    // aim follows the cursor/touch target regardless of movement direction
-    const shoulder = { x: this.x + this.w / 2, y: this.y + 20 };
-    const target = controller.aimTarget || { x: shoulder.x + 100, y: shoulder.y };
-    this.aim = computeAim(shoulder, target);
-    this.muzzle = computeMuzzle(shoulder, this.aim);
+    this.aimUp = controller.aimUp;
+    this.aimDown = controller.aimDown;
+    const vert = this.aimUp ? -1 : (this.aimDown ? 1 : 0);
+    const len = Math.hypot(this.facing, vert) || 1;
+    this.aim = { x: this.facing / len, y: vert / len };
 
-    if (controller.shootPressed) {
-      if (this.ammo > 0) {
-        this.shoot(game);
-      } else {
-        // unarmed + fire pressed near a spent bullet on the ground = kick it away
-        const target = findNearbyRestingBullet(this, game);
-        if (target) kickBullet(target, this);
-        else Audio_.empty();
-      }
-    }
-
-    for (const pk of game.pickups) {
-      if (!pk.available) continue;
-      const dx = (this.x + this.w / 2) - pk.x;
-      const dy = (this.y + this.h / 2) - pk.y;
-      if (Math.hypot(dx, dy) < pk.r + this.w / 2) {
-        if (this.ammo < 1) {
-          this.ammo = 1;
-          pk.take();
-          Audio_.pickup();
-        }
-      }
-    }
-
-    // walking up to a resting bullet without firing quietly reloads it
-    if (this.ammo < 1) {
-      for (const b of game.bullets) {
-        if (b.state !== 'resting') continue;
-        const dx = (this.x + this.w / 2) - b.x;
-        const dy = (this.y + this.h / 2) - b.y;
-        if (Math.hypot(dx, dy) < BULLET_INTERACT_RADIUS) {
-          this.ammo = 1;
-          b.dead = true;
-          Audio_.pickup();
-          break;
-        }
-      }
-    }
+    if (controller.shootPressed && this.ammo > 0) this.shoot(game);
 
     this.muzzleFlash = Math.max(0, this.muzzleFlash - dt * 6);
+    this.recoil = Math.max(0, this.recoil - dt * 30);
+  }
+
+  gunTip() {
+    const shoulder = { x: this.x + this.w / 2, y: this.y + 20 };
+    return { x: shoulder.x + this.aim.x * 18, y: shoulder.y + this.aim.y * 18 };
   }
 
   shoot(game) {
-    const speed = 720;
-    game.bullets.push(new Bullet(this.muzzle.x, this.muzzle.y, this.aim.x * speed, this.aim.y * speed, this.id));
+    const speed = 780;
+    const tip = this.gunTip();
+    game.bullets.push(new Bullet(tip.x, tip.y, this.aim.x * speed, this.aim.y * speed, this.id));
     this.ammo = 0;
     this.muzzleFlash = 1;
+    this.recoil = 6;
     Audio_.shoot();
   }
 }
 
-/* ------------------------------- BULLET ------------------------------- */
-const MAX_BOUNCES = 1;          // ricochets exactly once off a wall/boundary
-const BULLET_GRAVITY = 650;     // pulls every bullet toward the ground over time
-const RESTING_EXPIRY = 12;      // spent bullets vanish if nobody grabs them
-const BULLET_INTERACT_RADIUS = 32; // range to pick up / kick a resting bullet
-const KICK_SPEED = 520;
+/* ------------------------------- BULLET (ricochet, retrieval, denial) ------------------------------- */
+const MAX_BOUNCES = 1;
+const BULLET_GRAVITY = 620;
+const INTERACT_RADIUS = 26;
+const DENIAL_SPEED = 300;
 let BULLET_ID_SEQ = 1;
 
 class Bullet {
   constructor(x, y, vx, vy, ownerId) {
-    this.x = x; this.y = y;
-    this.vx = vx; this.vy = vy;
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
     this.ownerId = ownerId;
     this.uid = BULLET_ID_SEQ++;
-    this.r = 3.5;
+    this.r = 4;
     this.dead = false;
     this.bounces = 0;
-    this.age = 0;          // brief grace period before it can hit its own shooter
-    this.state = 'flying'; // 'flying' | 'resting'
-    this.restAge = 0;
+    this.state = 'flying';
     this.trail = [];
+    this.portalCooldown = 0.05;
+    this.denialCooldown = 0;
   }
 
   update(dt, game) {
     if (this.state === 'resting') {
-      this.restAge += dt;
-      if (this.restAge > RESTING_EXPIRY) this.dead = true;
+      if (this.denialCooldown > 0) this.denialCooldown -= dt;
       return;
     }
 
-    this.age += dt;
-    this.vy += BULLET_GRAVITY * dt; // gravity always wins eventually
+    tryPortalBullet(this, dt);
+    this.vy += BULLET_GRAVITY * dt;
 
     const totalDist = Math.hypot(this.vx, this.vy) * dt;
-    const stepSize = 6;
-    const steps = Math.max(1, Math.ceil(totalDist / stepSize));
+    const steps = Math.max(1, Math.ceil(totalDist / 6));
     const stepDt = dt / steps;
 
     for (let i = 0; i < steps; i++) {
@@ -799,75 +692,48 @@ class Bullet {
       let nx = this.x + this.vx * stepDt;
       let ny = this.y + this.vy * stepDt;
 
-      // --- arena boundary: bounce once, then just slide along it and fall ---
       if (nx < 0 || nx > CANVAS_W) {
         nx = Math.max(0, Math.min(CANVAS_W, nx));
-        if (this.bounces < MAX_BOUNCES) { this.vx = -this.vx; this.registerBounce(game); }
-        else { this.vx = 0; }
+        if (this.bounces < MAX_BOUNCES) { this.vx = -this.vx; this.bounces++; Audio_.bounce(); }
+        else this.vx = 0;
       }
       if (ny < 0) {
         ny = 0;
-        if (this.bounces < MAX_BOUNCES) { this.vy = -this.vy; this.registerBounce(game); }
-        else { this.vy = 0; }
+        if (this.bounces < MAX_BOUNCES) { this.vy = -this.vy; this.bounces++; Audio_.bounce(); }
+        else this.vy = 0;
       }
-      if (ny >= CANVAS_H) {
-        this.x = nx;
-        this.land(CANVAS_H, game);
-        return;
-      }
+      if (ny >= CANVAS_H) { this.x = nx; this.land(CANVAS_H, game); return; }
 
       this.x = nx; this.y = ny;
 
-      // --- arena geometry ---
       let hitRect = null;
       for (const r of arena.rects) {
-        if (this.x > r.x && this.x < r.x + r.w && this.y > r.y && this.y < r.y + r.h) {
-          hitRect = r;
-          break;
-        }
+        if (this.x > r.x && this.x < r.x + r.w && this.y > r.y && this.y < r.y + r.h) { hitRect = r; break; }
       }
       if (hitRect) {
-        const dLeft = this.x - hitRect.x;
-        const dRight = (hitRect.x + hitRect.w) - this.x;
-        const dTop = this.y - hitRect.y;
-        const dBottom = (hitRect.y + hitRect.h) - this.y;
+        const dLeft = this.x - hitRect.x, dRight = (hitRect.x + hitRect.w) - this.x;
+        const dTop = this.y - hitRect.y, dBottom = (hitRect.y + hitRect.h) - this.y;
         const minDist = Math.min(dLeft, dRight, dTop, dBottom);
         const EPS = 2;
 
-        // falling onto any top surface always comes to rest there — this is
-        // what stops bullets from ever freezing mid-air against a wall face
-        if (minDist === dTop && this.vy > 0) {
-          this.land(hitRect.y - EPS, game);
-          return;
-        }
+        if (minDist === dTop && this.vy > 0) { this.land(hitRect.y - EPS, game); return; }
 
         if (minDist === dTop || minDist === dBottom) {
           this.y = (minDist === dTop) ? hitRect.y - EPS : hitRect.y + hitRect.h + EPS;
-          if (this.bounces < MAX_BOUNCES) {
-            this.vy = -this.vy;
-            game.spawnImpact(this.x, this.y);
-            this.registerBounce(game);
-          } else {
-            this.vy = 0;
-          }
+          if (this.bounces < MAX_BOUNCES) { this.vy = -this.vy; game.spawnImpact(this.x, this.y); this.bounces++; Audio_.bounce(); }
+          else this.vy = 0;
         } else {
           this.x = (minDist === dLeft) ? hitRect.x - EPS : hitRect.x + hitRect.w + EPS;
-          if (this.bounces < MAX_BOUNCES) {
-            this.vx = -this.vx;
-            game.spawnImpact(this.x, this.y);
-            this.registerBounce(game);
-          } else {
-            this.vx = 0; // out of bounces — stop hugging the wall, let gravity drop it
-          }
+          if (this.bounces < MAX_BOUNCES) { this.vx = -this.vx; game.spawnImpact(this.x, this.y); this.bounces++; Audio_.bounce(); }
+          else this.vx = 0;
         }
         if (this.dead) return;
         continue;
       }
 
-      // --- players ---
       for (const p of game.players) {
         if (!p.alive) continue;
-        if (p.id === this.ownerId && this.age < 0.09) continue;
+        if (p.id === this.ownerId) continue; // a bullet can NEVER harm its owner
         if (this.x > p.x && this.x < p.x + p.w && this.y > p.y && this.y < p.y + p.h) {
           this.dead = true;
           game.onPlayerHit(p, this);
@@ -877,105 +743,102 @@ class Bullet {
     }
   }
 
-  // Comes to a full stop on a surface and becomes a retrievable/kickable object.
   land(y, game) {
-    this.y = y;
-    this.vx = 0; this.vy = 0;
+    this.y = y; this.vx = 0; this.vy = 0;
     this.state = 'resting';
-    this.restAge = 0;
     game.spawnImpact(this.x, this.y);
   }
-
-  registerBounce(game) {
-    this.bounces++;
-    Audio_.bounce();
-  }
 }
 
-// Find the nearest resting bullet within kicking/picking range of a player.
-function findNearbyRestingBullet(player, game) {
-  let best = null, bestDist = Infinity;
+// Automatic: owner touching their own resting bullet retrieves it; the
+// opponent touching it instead denies (knocks it away, never collects it).
+function resolveBulletContacts(game) {
   for (const b of game.bullets) {
     if (b.state !== 'resting') continue;
-    const dx = (player.x + player.w / 2) - b.x;
-    const dy = (player.y + player.h / 2) - b.y;
-    const d = Math.hypot(dx, dy);
-    if (d < BULLET_INTERACT_RADIUS && d < bestDist) { best = b; bestDist = d; }
+    for (const p of game.players) {
+      if (!p.alive) continue;
+      const dx = (p.x + p.w / 2) - b.x, dy = (p.y + p.h / 2) - b.y;
+      if (Math.hypot(dx, dy) >= INTERACT_RADIUS) continue;
+
+      if (p.id === b.ownerId) {
+        if (p.ammo < 1) { p.ammo = 1; b.dead = true; Audio_.pickup(); }
+      } else if (b.denialCooldown <= 0) {
+        const away = Math.hypot(dx, dy) < 0.01 ? { x: (Math.random() < 0.5 ? -1 : 1), y: -0.4 } : { x: -dx, y: -dy };
+        const len = Math.hypot(away.x, away.y) || 1;
+        b.state = 'flying';
+        b.bounces = 0;
+        b.trail = [];
+        b.vx = (away.x / len) * DENIAL_SPEED;
+        b.vy = (away.y / len) * DENIAL_SPEED - 120;
+        b.denialCooldown = 0.4;
+        game.spawnImpact(b.x, b.y);
+        Audio_.denial();
+      }
+    }
   }
-  return best;
 }
 
-// Punt a resting bullet away in the direction the player is currently aiming.
-function kickBullet(b, player) {
-  b.state = 'flying';
-  b.dead = false;
-  b.bounces = 0;
-  b.age = 0;
-  b.trail = [];
-  b.ownerId = player.id;
-  b.vx = player.aim.x * KICK_SPEED;
-  b.vy = player.aim.y * KICK_SPEED - 140; // slight upward pop for a satisfying arc
-  Audio_.kick();
-}
-
-/* ------------------------------- GAME (host-authoritative) ------------------------------- */
+/* ------------------------------- GAME (round + simulation) ------------------------------- */
 class Game {
   constructor(role) {
-    this.role = role; // 'host' | 'guest'
-    this.state = 'playing';
+    this.role = role; // 'local' | 'host' | 'guest'
+    this.state = 'countdown';
     this.winnerId = null;
     this.lastTime = performance.now();
     this.impacts = [];
+    this.countdownTimer = 0;
+    this.countdownStep = 0;
 
-    // shared / rendering pickups exist on both sides; host owns availability,
-    // guest just mirrors it and animates the bob locally
-    this.pickups = PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y));
-
-    if (role === 'host') {
+    if (role !== 'guest') {
       this.players = [
-        new Player('p1', 90, 420, '#35d8ff'),
-        new Player('p2', 846, 420, '#ff5d3d')
+        new Player('p1', SPAWN.p1.x, SPAWN.p1.y, '#4dd8e8', 1),
+        new Player('p2', SPAWN.p2.x, SPAWN.p2.y, '#ff7a52', -1)
       ];
       this.bullets = [];
-      this.remoteController = { left: false, right: false, aimTarget: { x: 300, y: 400 } };
+      this.remoteController = { left: false, right: false, aimUp: false, aimDown: false };
       this.remoteJumpQueued = false;
       this.remoteShootQueued = false;
     } else {
-      this.remotePlayers = null;   // last received render data for both players
+      this.remotePlayers = null;
       this.remoteBullets = [];
-      this.bulletTrails = new Map(); // uid -> trail points
+      this.bulletTrails = new Map();
       this._prevPlayers = null;
     }
 
     Net.onMessage = (msg) => this.handleNetMessage(msg);
     Net.onClose = () => this.handleDisconnect();
 
+    this.startCountdown();
     requestAnimationFrame(this.loop.bind(this));
   }
 
-  /* ---------- networking ---------- */
+  startCountdown() {
+    this.state = 'countdown';
+    this.countdownStep = 0;
+    this.countdownTimer = 0.7;
+    updateCountdownUI('3');
+  }
+
   handleNetMessage(msg) {
     if (this.role === 'host') {
       if (msg.t === 'i') {
         this.remoteController.left = msg.l;
         this.remoteController.right = msg.r;
-        this.remoteController.aimTarget = { x: msg.ax, y: msg.ay };
+        this.remoteController.aimUp = msg.au;
+        this.remoteController.aimDown = msg.ad;
         if (msg.j) this.remoteJumpQueued = true;
         if (msg.sh) this.remoteShootQueued = true;
       } else if (msg.t === 'rematch') {
-        this.resetHost();
+        this.resetRound();
       }
-    } else {
+    } else if (this.role === 'guest') {
       if (msg.t === 's') this.applyRemoteState(msg);
     }
   }
 
-  handleDisconnect() {
-    document.getElementById('disconnectOverlay').classList.add('show');
-  }
+  handleDisconnect() { document.getElementById('disconnectOverlay').classList.add('show'); }
 
   applyRemoteState(msg) {
-    // sound heuristics based on state deltas (guest doesn't simulate directly)
     if (this._prevPlayers) {
       msg.p.forEach((p, i) => {
         const prev = this._prevPlayers[i];
@@ -987,6 +850,7 @@ class Game {
     }
     this._prevPlayers = msg.p;
     this.remotePlayers = msg.p;
+    setHud(msg.p[0].ammo > 0, msg.p[1].ammo > 0);
 
     const seen = new Set();
     for (const b of msg.b) {
@@ -998,43 +862,37 @@ class Game {
         if (trail.length > 6) trail.shift();
       }
     }
-    for (const id of Array.from(this.bulletTrails.keys())) {
-      if (!seen.has(id)) this.bulletTrails.delete(id);
-    }
+    for (const id of Array.from(this.bulletTrails.keys())) if (!seen.has(id)) this.bulletTrails.delete(id);
     this.remoteBullets = msg.b;
 
-    msg.k.forEach((avail, i) => { if (this.pickups[i]) this.pickups[i].available = avail; });
+    if (msg.cd) { this.state = 'countdown'; updateCountdownUI(msg.cd); }
+    else if (msg.st === 'playing' && this.state !== 'playing') { this.state = 'playing'; hideCountdownUI(); }
 
-    if (msg.st === 'gameover' && this.state !== 'gameover') {
-      this.state = 'gameover';
+    if (msg.st === 'roundover' && this.state !== 'roundover') {
+      this.state = 'roundover';
       this.winnerId = msg.w;
       showWinScreen(this.winnerId);
-    } else if (msg.st === 'playing') {
-      this.state = 'playing';
     }
   }
 
-  /* ---------- host simulation ---------- */
-  resetHost() {
+  resetRound() {
     this.players = [
-      new Player('p1', 90, 420, '#35d8ff'),
-      new Player('p2', 846, 420, '#ff5d3d')
+      new Player('p1', SPAWN.p1.x, SPAWN.p1.y, '#4dd8e8', 1),
+      new Player('p2', SPAWN.p2.x, SPAWN.p2.y, '#ff7a52', -1)
     ];
     this.bullets = [];
-    this.pickups = PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y));
     this.impacts = [];
     this.winnerId = null;
-    this.remoteController = { left: false, right: false, aimTarget: { x: 300, y: 400 } };
+    this.remoteController = { left: false, right: false, aimUp: false, aimDown: false };
     this.remoteJumpQueued = false;
     this.remoteShootQueued = false;
-    this.state = 'playing';
+    this.startCountdown();
   }
 
   spawnImpact(x, y) {
     for (let i = 0; i < 5; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 40 + Math.random() * 60;
-      this.impacts.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1 });
+      const a = Math.random() * Math.PI * 2, s = 40 + Math.random() * 55;
+      this.impacts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1 });
     }
   }
 
@@ -1042,42 +900,20 @@ class Game {
     player.alive = false;
     this.spawnImpact(bullet.x, bullet.y);
     Audio_.hit();
+    Audio_.victory();
     const winner = this.players.find(p => p.id !== player.id);
     this.winnerId = winner.id;
-    this.state = 'gameover';
+    this.state = 'roundover';
     showWinScreen(this.winnerId);
   }
 
-  getLocalController() {
-    const mp = Mouse.pos();
-    return {
-      left: Input.isDown('a'),
-      right: Input.isDown('d'),
-      jumpPressed: Input.wasPressed(' '),
-      shootPressed: Mouse.wasPressed(),
-      aimTarget: mp
-    };
-  }
-
-  updateHost(dt) {
-    const localCtrl = this.getLocalController();
-    const remoteCtrl = {
-      left: this.remoteController.left,
-      right: this.remoteController.right,
-      jumpPressed: this.remoteJumpQueued,
-      shootPressed: this.remoteShootQueued,
-      aimTarget: this.remoteController.aimTarget
-    };
-
-    this.players[0].update(dt, this, localCtrl);
-    this.players[1].update(dt, this, remoteCtrl);
-    this.remoteJumpQueued = false;
-    this.remoteShootQueued = false;
+  simulateStep(dt, ctrl0, ctrl1) {
+    this.players[0].update(dt, this, ctrl0);
+    this.players[1].update(dt, this, ctrl1);
 
     for (const b of this.bullets) b.update(dt, this);
+    resolveBulletContacts(this);
     this.bullets = this.bullets.filter(b => !b.dead);
-
-    for (const pk of this.pickups) pk.update(dt);
 
     for (const im of this.impacts) {
       im.x += im.vx * dt; im.y += im.vy * dt;
@@ -1086,50 +922,63 @@ class Game {
     }
     this.impacts = this.impacts.filter(im => im.life > 0);
 
-    Input.clearFrame();
-    Mouse.clearFrame();
+    setHud(this.players[0].ammo > 0, this.players[1].ammo > 0);
+  }
 
-    this.broadcastState();
+  updateAuthoritative(dt, ctrl0, ctrl1) {
+    if (this.state === 'countdown') {
+      this.countdownTimer -= dt;
+      if (this.countdownTimer <= 0) {
+        this.countdownStep++;
+        const labels = ['2', '1', 'FIGHT'];
+        if (this.countdownStep <= 2) { this.countdownTimer = 0.7; updateCountdownUI(labels[this.countdownStep - 1]); }
+        else if (this.countdownStep === 3) { this.countdownTimer = 0.5; updateCountdownUI(labels[this.countdownStep - 1]); }
+        else { this.state = 'playing'; hideCountdownUI(); }
+      }
+    } else if (this.state === 'playing') {
+      this.simulateStep(dt, ctrl0, ctrl1);
+    }
+    Input.clearFrame();
   }
 
   broadcastState() {
     if (!Net.isOpen()) return;
-    Net.send({
+    const msg = {
       t: 's',
       p: this.players.map(p => ({
         x: p.x, y: p.y, alive: p.alive, ammo: p.ammo,
-        aim: p.aim, mf: p.muzzleFlash, wc: p.walkCycle, og: p.onGround
+        aim: p.aim, mf: p.muzzleFlash, rc: p.recoil, wc: p.walkCycle, og: p.onGround
       })),
-      b: this.bullets.map(b => ({ id: b.uid, x: b.x, y: b.y, rs: b.state === 'resting' })),
-      k: this.pickups.map(pk => pk.available),
+      b: this.bullets.map(b => ({ id: b.uid, x: b.x, y: b.y, rs: b.state === 'resting', owner: b.ownerId })),
       st: this.state,
       w: this.winnerId
-    });
+    };
+    if (this.state === 'countdown') msg.cd = document.getElementById('countdownText').textContent;
+    Net.send(msg);
   }
 
-  /* ---------- guest (thin client) ---------- */
-  updateGuest(dt) {
-    const localCtrl = this.getLocalController();
-    Net.send({
-      t: 'i',
-      l: localCtrl.left, r: localCtrl.right,
-      j: localCtrl.jumpPressed, sh: localCtrl.shootPressed,
-      ax: localCtrl.aimTarget.x, ay: localCtrl.aimTarget.y
-    });
-    Input.clearFrame();
-    Mouse.clearFrame();
-    for (const pk of this.pickups) pk.bob += dt * 3; // cosmetic only
-  }
-
-  /* ---------- main loop ---------- */
   loop(now) {
     let dt = (now - this.lastTime) / 1000;
     dt = Math.min(dt, 1 / 30);
     this.lastTime = now;
 
-    if (this.state === 'playing') {
-      if (this.role === 'host') this.updateHost(dt);
-      else this.updateGuest(dt);
+    if (this.role === 'local') {
+      this.updateAuthoritative(dt, getP1Controller(), getP2Controller());
+    } else if (this.role === 'host') {
+      const ctrl0 = getUnifiedController();
+      const ctrl1 = {
+        left: this.remoteController.left, right: this.remoteController.right,
+        jumpPressed: this.remoteJumpQueued, shootPressed: this.remoteShootQueued,
+        aimUp: this.remoteController.aimUp, aimDown: this.remoteController.aimDown
+      };
+      this.updateAuthoritative(dt, ctrl0, ctrl1);
+      this.remoteJumpQueued = false;
+      this.remoteShootQueued = false;
+      this.broadcastState();
+    } else { // guest: thin client
+      const c = getUnifiedController();
+      Net.send({ t: 'i', l: c.left, r: c.right, j: c.jumpPressed, sh: c.shootPressed, au: c.aimUp, ad: c.aimDown });
+      Input.clearFrame();
     }
 
     Render.frame(this);
@@ -1141,184 +990,149 @@ class Game {
 const Render = (() => {
   function background() {
     const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-    g.addColorStop(0, '#161923');
-    g.addColorStop(1, '#0c0d13');
+    g.addColorStop(0, '#15161c');
+    g.addColorStop(1, '#0a0a0e');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.025)';
-    for (let x = 20; x < CANVAS_W; x += 40) {
-      for (let y = 20; y < CANVAS_H; y += 40) {
-        ctx.fillRect(x, y, 2, 2);
-      }
-    }
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(2, 2, CANVAS_W - 4, CANVAS_H - 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, CANVAS_W - 2, CANVAS_H - 2);
   }
 
   function arenaGeometry() {
     for (const r of arena.rects) {
-      let fill, stroke;
-      switch (r.type) {
-        case 'floor': fill = '#23262f'; stroke = '#343846'; break;
-        case 'platform': fill = '#2a2e3a'; stroke = '#454b5c'; break;
-        case 'wall': fill = '#20222b'; stroke = '#3c4150'; break;
-        case 'cover': fill = '#2e3240'; stroke = '#4a5064'; break;
-        default: fill = '#222'; stroke = '#444';
-      }
+      let fill = '#23252d', stroke = '#3a3d48';
+      if (r.type === 'pillar') { fill = '#1c1d24'; stroke = '#454956'; }
+      if (r.type === 'cover') { fill = '#292b34'; stroke = '#464a58'; }
       ctx.fillStyle = fill;
       ctx.fillRect(r.x, r.y, r.w, r.h);
       ctx.strokeStyle = stroke;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.04)';
-      ctx.fillRect(r.x, r.y, r.w, 3);
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(r.x + 0.75, r.y + 0.75, r.w - 1.5, r.h - 1.5);
+      ctx.fillStyle = 'rgba(255,255,255,0.035)';
+      ctx.fillRect(r.x, r.y, r.w, 2);
     }
   }
 
-  function pickups(list) {
-    for (const pk of list) {
-      if (!pk.available) continue;
-      const bobY = pk.y + Math.sin(pk.bob) * 4;
+  function portalsRender(dt) {
+    for (const portal of portals) {
+      portal.spinT += dt;
       ctx.save();
-      ctx.translate(pk.x, bobY);
-      ctx.shadowColor = '#ffe27a';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = '#ffe27a';
-      ctx.beginPath();
-      ctx.ellipse(0, 0, pk.r, pk.r * 0.6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fff6c8';
-      ctx.beginPath();
-      ctx.ellipse(-2, -1, pk.r * 0.35, pk.r * 0.22, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.translate(portal.x, portal.y);
+      ctx.strokeStyle = 'rgba(185,140,255,0.55)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(0, 0, portal.r, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(185,140,255,0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 0, portal.r - 6, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#b98cff';
+      const a = portal.spinT * 2.4;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * (portal.r - 6), Math.sin(a) * (portal.r - 6), 2.4, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
-  }
-
-  function ammoIndicator(p) {
-    if (!p.alive) return;
-    const cx = p.x + p.w / 2;
-    const cy = p.y - 12;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-    if (p.ammo > 0) {
-      ctx.fillStyle = '#ffe27a';
-      ctx.shadowColor = '#ffe27a';
-      ctx.shadowBlur = 8;
-      ctx.fill();
-    } else {
-      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-    ctx.restore();
   }
 
   function stickman(p) {
     if (!p.alive) return;
     ctx.save();
+    const cx = p.x + p.w / 2 - p.aim.x * p.recoil * 0.4;
+    const headY = p.y + 9, shoulderY = p.y + 19, hipY = p.y + 36, footY = p.y + p.h;
 
-    const cx = p.x + p.w / 2;
-    const headY = p.y + 9;
-    const shoulderY = p.y + 20;
-    const hipY = p.y + 38;
-    const footY = p.y + p.h;
+    ctx.fillStyle = p.color; ctx.strokeStyle = p.color; ctx.lineCap = 'round';
 
-    ctx.strokeStyle = p.color;
-    ctx.fillStyle = p.color;
+    // legs
+    const legSwing = p.onGround ? Math.sin(p.walkCycle) * 7 : 3;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(cx, hipY); ctx.lineTo(cx - 6 + legSwing * 0.3, footY);
+    ctx.moveTo(cx, hipY); ctx.lineTo(cx + 6 - legSwing * 0.3, footY);
+    ctx.stroke();
+
+    // torso (compact rounded rect, not a thin line)
+    const tw = 15, th = hipY - shoulderY + 4;
+    roundRect(cx - tw / 2, shoulderY - 2, tw, th, 5);
+    ctx.fill();
+
+    // off-arm (small)
     ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur = 8;
-
-    const legSwing = p.onGround ? Math.sin(p.walkCycle) * 8 : 4;
     ctx.beginPath();
-    ctx.moveTo(cx, hipY);
-    ctx.lineTo(cx - 7 + legSwing * 0.3, footY);
-    ctx.moveTo(cx, hipY);
-    ctx.lineTo(cx + 7 - legSwing * 0.3, footY);
+    ctx.moveTo(cx, shoulderY + 2); ctx.lineTo(cx - p.facing * 6, hipY - 6);
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(cx, shoulderY);
-    ctx.lineTo(cx, hipY);
-    ctx.stroke();
-
-    const aim = p.aim || { x: 1, y: 0 };
+    // gun arm + gun
     const shoulder = { x: cx, y: shoulderY };
-    const hand = computeMuzzle(shoulder, aim);
-    const facing = aim.x >= 0 ? 1 : -1;
-
+    const tip = { x: shoulder.x + p.aim.x * 18, y: shoulder.y + p.aim.y * 18 };
     ctx.beginPath();
-    ctx.moveTo(shoulder.x, shoulder.y);
-    ctx.lineTo(shoulder.x - facing * 6, hipY - 4);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(shoulder.x, shoulder.y);
-    ctx.lineTo(hand.x, hand.y);
+    ctx.moveTo(shoulder.x, shoulder.y); ctx.lineTo(tip.x, tip.y);
     ctx.stroke();
 
     ctx.save();
-    ctx.translate(hand.x, hand.y);
-    ctx.rotate(Math.atan2(aim.y, aim.x));
-    ctx.fillStyle = p.ammo > 0 ? '#dfe3ee' : '#7a7d8a';
-    ctx.shadowBlur = 3;
-    ctx.fillRect(0, -2.5, 16, 5);
+    ctx.translate(tip.x, tip.y);
+    ctx.rotate(Math.atan2(p.aim.y, p.aim.x));
+    ctx.fillStyle = p.ammo > 0 ? '#e8eaf0' : '#5b5e6c';
+    ctx.fillRect(-1, -2.5, 15, 5);
+    ctx.fillRect(11, -3.5, 4, 3);
     ctx.restore();
 
     if (p.muzzleFlash > 0) {
       ctx.save();
       ctx.globalAlpha = p.muzzleFlash;
-      ctx.fillStyle = '#fff6c8';
+      ctx.fillStyle = '#fff3d6';
       ctx.beginPath();
-      ctx.arc(hand.x + aim.x * 16, hand.y + aim.y * 16, 5 * p.muzzleFlash + 2, 0, Math.PI * 2);
+      ctx.arc(tip.x + p.aim.x * 15, tip.y + p.aim.y * 15, 5 * p.muzzleFlash + 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(cx, headY, 8, 0, Math.PI * 2);
-    ctx.fill();
+    // head
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(cx, headY, 8, 0, Math.PI * 2); ctx.fill();
 
     ctx.restore();
-    ammoIndicator(p);
+
+    // ready/lost indicator above head
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x + p.w / 2, p.y - 10, 4, 0, Math.PI * 2);
+    if (p.ammo > 0) { ctx.fillStyle = p.color; ctx.fill(); }
+    else { ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.4; ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
   }
 
   function bullets(list) {
     for (const b of list) {
       ctx.save();
       if (b.state === 'resting') {
-        // grounded, retrievable — small shadow + steady pulse instead of a trail
-        ctx.globalAlpha = 0.35;
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.ellipse(b.x, b.y + 4, 6, 2.5, 0, 0, Math.PI * 2);
-        ctx.fill();
+        const ownerColor = (b.owner === 'p1' || b.ownerId === 'p1') ? '#4dd8e8' : '#ff7a52';
+        ctx.globalAlpha = 0.4;
+        ctx.strokeStyle = ownerColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r + 4, 0, Math.PI * 2); ctx.stroke();
         ctx.globalAlpha = 1;
       } else {
         const trail = b.trail || [];
         for (let i = 0; i < trail.length; i++) {
           const t = trail[i];
           ctx.globalAlpha = (i / trail.length) * 0.5;
-          ctx.fillStyle = '#fff6c8';
-          ctx.beginPath();
-          ctx.arc(t.x, t.y, b.r * 0.6, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = '#fff3d6';
+          ctx.beginPath(); ctx.arc(t.x, t.y, b.r * 0.6, 0, Math.PI * 2); ctx.fill();
         }
         ctx.globalAlpha = 1;
       }
-      ctx.fillStyle = '#fff6c8';
-      ctx.shadowColor = '#ffe27a';
-      ctx.shadowBlur = b.state === 'resting' ? 10 : 6;
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = '#fff8e6';
+      ctx.shadowColor = '#ffdca0';
+      ctx.shadowBlur = b.state === 'resting' ? 8 : 5;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   }
@@ -1328,47 +1142,43 @@ const Render = (() => {
       ctx.save();
       ctx.globalAlpha = Math.max(0, im.life);
       ctx.fillStyle = '#ffd08a';
-      ctx.beginPath();
-      ctx.arc(im.x, im.y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(im.x, im.y, 2.2, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   }
 
   function buildGuestPlayerView(mp, index) {
     return {
-      x: mp.x, y: mp.y, w: 24, h: 54,
-      alive: mp.alive,
-      color: index === 0 ? '#35d8ff' : '#ff5d3d',
-      ammo: mp.ammo,
-      aim: mp.aim,
-      muzzleFlash: mp.mf,
-      walkCycle: mp.wc,
-      onGround: mp.og
+      x: mp.x, y: mp.y, w: 22, h: 52, alive: mp.alive,
+      color: index === 0 ? '#4dd8e8' : '#ff7a52',
+      ammo: mp.ammo, aim: mp.aim, muzzleFlash: mp.mf, recoil: mp.rc,
+      walkCycle: mp.wc, onGround: mp.og, facing: mp.aim.x >= 0 ? 1 : -1
     };
   }
 
+  let lastT = performance.now();
   function frame(game) {
+    const now = performance.now();
+    const dt = Math.min((now - lastT) / 1000, 1 / 30);
+    lastT = now;
+
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     background();
     arenaGeometry();
+    portalsRender(dt);
 
     let viewPlayers, viewBullets, viewImpacts;
-    if (game.role === 'host') {
-      viewPlayers = game.players;
-      viewBullets = game.bullets;
-      viewImpacts = game.impacts;
+    if (game.role !== 'guest') {
+      viewPlayers = game.players; viewBullets = game.bullets; viewImpacts = game.impacts;
     } else {
       viewPlayers = (game.remotePlayers || []).map((mp, i) => buildGuestPlayerView(mp, i));
       viewBullets = (game.remoteBullets || []).map(b => ({
-        x: b.x, y: b.y, r: 3.5,
-        state: b.rs ? 'resting' : 'flying',
+        x: b.x, y: b.y, r: 4, state: b.rs ? 'resting' : 'flying', owner: b.owner,
         trail: b.rs ? [] : (game.bulletTrails.get(b.id) || [])
       }));
       viewImpacts = [];
     }
 
-    pickups(game.pickups);
     bullets(viewBullets);
     for (const p of viewPlayers) stickman(p);
     impacts(viewImpacts);
@@ -1381,12 +1191,27 @@ const Render = (() => {
 const startOverlay = document.getElementById('startOverlay');
 const winOverlay = document.getElementById('winOverlay');
 const winText = document.getElementById('winText');
-
 const menuPanel = document.getElementById('menuPanel');
 const hostPanel = document.getElementById('hostPanel');
 const joinPanel = document.getElementById('joinPanel');
+const countdownOverlay = document.getElementById('countdownOverlay');
+const countdownText = document.getElementById('countdownText');
+const touchControls = document.getElementById('touchControls');
+const hudDot1 = document.getElementById('hudDot1');
+const hudDot2 = document.getElementById('hudDot2');
+const hudP1 = document.getElementById('hudP1');
+const hudP2 = document.getElementById('hudP2');
 
 let game = null;
+
+function setHud(ready1, ready2) {
+  hudDot1.style.opacity = ready1 ? '1' : '0.3';
+  hudDot2.style.opacity = ready2 ? '1' : '0.3';
+  hudP1.lastElementChild.textContent = 'P1 ' + (ready1 ? 'READY' : 'LOST');
+  hudP2.firstElementChild.textContent = 'P2 ' + (ready2 ? 'READY' : 'LOST');
+}
+function updateCountdownUI(label) { countdownText.textContent = label; countdownOverlay.classList.add('show'); }
+function hideCountdownUI() { countdownOverlay.classList.remove('show'); }
 
 function showWinScreen(winnerId) {
   winText.textContent = (winnerId === 'p1' ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS');
@@ -1402,30 +1227,35 @@ function switchPanel(panel) {
 function beginMatch(role) {
   Audio_.resume();
   startOverlay.classList.remove('show');
-  document.getElementById('aimHint').classList.add('show');
+  setHud(true, true);
+  const useTouch = role !== 'local' && window.matchMedia('(pointer: coarse)').matches;
+  touchControls.classList.toggle('active', useTouch);
   game = new Game(role);
 }
 Net.onOpen = () => beginMatch(Net.role);
+
+document.getElementById('localBtn').addEventListener('click', () => beginMatch('local'));
 
 async function copyToClipboard(el) {
   try { await navigator.clipboard.writeText(el.value); }
   catch (e) { el.select(); try { document.execCommand('copy'); } catch (e2) {} }
 }
 
-/* ---- menu ---- */
 document.getElementById('hostBtn').addEventListener('click', async () => {
   switchPanel(hostPanel);
   const status = document.getElementById('hostStatus');
   const out = document.getElementById('hostCodeOut');
-  out.value = ''; status.textContent = 'Generating code...';
+  out.value = ''; status.textContent = 'Generating room code...';
   try {
-    const id = await Net.host();
-    out.value = id;
-    status.textContent = 'Share this code. The match starts automatically once they connect.';
+    const code = await Net.host();
+    out.value = code;
+    status.textContent = 'Give this code to the other player. Starts automatically once they connect.';
   } catch (e) {
-    status.textContent = 'Could not create a match. Check your connection and try again.';
+    status.textContent = 'Could not create a room. Check your connection and try again.';
   }
 });
+document.getElementById('copyHostCode').addEventListener('click', () => copyToClipboard(document.getElementById('hostCodeOut')));
+document.getElementById('hostBackBtn').addEventListener('click', () => location.reload());
 
 document.getElementById('joinBtn').addEventListener('click', () => {
   switchPanel(joinPanel);
@@ -1433,45 +1263,28 @@ document.getElementById('joinBtn').addEventListener('click', () => {
   document.getElementById('joinCodeIn').value = '';
 });
 document.getElementById('joinCodeIn').addEventListener('input', (e) => {
-  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+  e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 5);
 });
-
-/* ---- host flow ---- */
-document.getElementById('copyHostCode').addEventListener('click', () => {
-  copyToClipboard(document.getElementById('hostCodeOut'));
-});
-document.getElementById('hostBackBtn').addEventListener('click', () => location.reload());
-
-/* ---- join flow (single code, connects immediately) ---- */
 document.getElementById('joinConnectBtn').addEventListener('click', async () => {
   const status = document.getElementById('joinStatus');
-  const hostId = document.getElementById('joinCodeIn').value.trim();
-  if (hostId.length !== 4) { status.textContent = 'Enter the 4-digit code first.'; return; }
+  const code = document.getElementById('joinCodeIn').value.trim();
+  if (code.length !== 5) { status.textContent = 'Enter the 5-character room code first.'; return; }
   status.textContent = 'Connecting...';
-  try {
-    await Net.join(hostId);
-    status.textContent = 'Connected! Starting match...';
-  } catch (e) {
-    status.textContent = 'Could not connect. Double-check the code and try again.';
-  }
+  try { await Net.join(code); status.textContent = 'Connected! Starting match...'; }
+  catch (e) { status.textContent = 'Could not connect. Double-check the code and try again.'; }
 });
 document.getElementById('joinBackBtn').addEventListener('click', () => location.reload());
 
-/* ---- win / disconnect screens ---- */
 document.getElementById('rematchBtn').addEventListener('click', () => {
   winOverlay.classList.remove('show');
   if (!game) return;
-  if (game.role === 'host') {
-    game.resetHost();
-  } else {
-    Net.send({ t: 'rematch' });
-    game.state = 'playing';
-  }
+  if (game.role === 'local' || game.role === 'host') game.resetRound();
+  else Net.send({ t: 'rematch' });
 });
 document.getElementById('menuBtn').addEventListener('click', () => location.reload());
 document.getElementById('reloadBtn').addEventListener('click', () => location.reload());
 
-/* ---- on-screen touch controls (phones/tablets) ---- */
+/* ---- touch controls ---- */
 function bindHold(el, key) {
   const start = (e) => { e.preventDefault(); el.classList.add('active'); Input.virtualPress(key); };
   const end = (e) => { e.preventDefault(); el.classList.remove('active'); Input.virtualRelease(key); };
@@ -1482,17 +1295,34 @@ function bindHold(el, key) {
 }
 bindHold(document.getElementById('btnLeft'), 'a');
 bindHold(document.getElementById('btnRight'), 'd');
-bindHold(document.getElementById('btnJump'), ' ');
+bindHold(document.getElementById('btnAimUp'), 'w');
+bindHold(document.getElementById('btnAimDown'), 's');
+bindHold(document.getElementById('btnShoot'), 'f');
+
+/* ---- fullscreen (mobile-friendly) ---- */
+const fsBtn = document.getElementById('fullscreenBtn');
+function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function updateFsIcon() { fsBtn.innerHTML = isFullscreen() ? '&#10005;' : '&#9974;'; }
+fsBtn.addEventListener('click', () => {
+  if (!isFullscreen()) {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) {
+      req.call(el).then(() => {
+        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+      }).catch(() => {});
+    }
+  } else {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) exit.call(document);
+  }
+});
+document.addEventListener('fullscreenchange', updateFsIcon);
+document.addEventListener('webkitfullscreenchange', updateFsIcon);
 
 /* ---- idle preview behind the lobby ---- */
 (function idlePreview() {
-  const dummy = {
-    role: 'host',
-    players: [],
-    bullets: [],
-    pickups: PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y)),
-    impacts: []
-  };
+  const dummy = { role: 'local', players: [], bullets: [], impacts: [] };
   Render.frame(dummy);
 })();
 </script>
