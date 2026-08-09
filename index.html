@@ -163,25 +163,53 @@
   .winText.p1 { color: #35d8ff; text-shadow: 0 0 25px #35d8ff; }
   .winText.p2 { color: #ff5d3d; text-shadow: 0 0 25px #ff5d3d; }
 
-  /* ---------------- mobile rotate hint ---------------- */
-  .rotate-hint {
+  /* ---------------- force landscape on phones (CSS rotation trick) ----------------
+     Most mobile browsers (iOS Safari especially) don't support locking screen
+     orientation from a plain web page, so instead we rotate the whole game
+     container to fill the portrait viewport in a landscape layout. The user
+     can hold the phone naturally; the game just renders sideways to fit. */
+  @media (orientation: portrait) and (pointer: coarse) {
+    #gameContainer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(94vh, 167vw);
+      aspect-ratio: 960 / 540;
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+  }
+
+  /* ---------------- aim hint (touch only, fades after a few seconds) ---------------- */
+  .aim-hint {
     display: none;
     position: absolute;
-    top: 8px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0,0,0,0.55);
-    color: #ffd08a;
+    color: #b6bad0;
     font-size: 10.5px;
     letter-spacing: 0.4px;
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 20px;
     pointer-events: none;
     z-index: 45;
     white-space: nowrap;
+    opacity: 0;
   }
-  @media (orientation: portrait) and (max-width: 700px) {
-    .rotate-hint { display: block; }
+  @media (pointer: coarse) {
+    .aim-hint {
+      display: block;
+    }
+  }
+  .aim-hint.show {
+    animation: aimHintFade 4.5s ease forwards;
+  }
+  @keyframes aimHintFade {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
   }
 
   /* ---------------- touch controls (phones/tablets) ---------------- */
@@ -189,35 +217,43 @@
     display: none;
     position: absolute;
     left: 0; right: 0; bottom: 0;
-    padding: 14px;
+    padding: max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     justify-content: space-between;
     align-items: flex-end;
     z-index: 30;
     pointer-events: none;
   }
-  .touch-move { display: flex; gap: 10px; pointer-events: auto; }
+  .touch-move { display: flex; gap: 12px; pointer-events: auto; }
   .touch-btn {
-    width: 58px; height: 58px;
+    width: 66px; height: 66px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(53,216,255,0.10);
+    border: 1.5px solid rgba(53,216,255,0.35);
     color: #e8e8f0;
-    font-size: 20px;
+    font-size: 22px;
     display: flex; align-items: center; justify-content: center;
     -webkit-user-select: none; user-select: none;
     touch-action: none;
     padding: 0;
+    box-shadow: 0 0 14px rgba(53,216,255,0.08);
   }
   .touch-btn:active, .touch-btn.active {
-    background: rgba(255,255,255,0.22);
+    background: rgba(53,216,255,0.28);
+    box-shadow: 0 0 20px rgba(53,216,255,0.25);
   }
   .jump-btn {
-    width: 74px; height: 74px;
+    width: 84px; height: 84px;
     font-size: 11px;
+    font-weight: 800;
     letter-spacing: 1px;
     pointer-events: auto;
-    background: rgba(255,224,138,0.1);
-    border-color: rgba(255,224,138,0.35);
+    background: rgba(255,224,138,0.12);
+    border-color: rgba(255,224,138,0.4);
+    box-shadow: 0 0 14px rgba(255,224,138,0.1);
+  }
+  .jump-btn:active, .jump-btn.active {
+    background: rgba(255,224,138,0.3);
+    box-shadow: 0 0 22px rgba(255,224,138,0.28);
   }
   @media (pointer: coarse) {
     .touch-controls { display: flex; }
@@ -228,7 +264,7 @@
 
 <div id="gameContainer">
   <canvas id="canvas" width="960" height="540"></canvas>
-  <div class="rotate-hint">Rotate your phone for a bigger arena</div>
+  <div class="aim-hint" id="aimHint">Drag to aim • Release to fire</div>
 
   <!-- TOUCH CONTROLS: drag/tap on the arena itself to aim + fire -->
   <div id="touchControls" class="touch-controls">
@@ -236,7 +272,7 @@
       <button id="btnLeft" class="touch-btn">&#9664;</button>
       <button id="btnRight" class="touch-btn">&#9654;</button>
     </div>
-    <button id="btnJump" class="touch-btn jump-btn">JUMP</button>
+    <button id="btnJump" class="touch-btn jump-btn">&#9650;<br>JUMP</button>
   </div>
 
   <!-- START / LOBBY SCREEN -->
@@ -250,7 +286,8 @@
           Real 2-player multiplayer — <b>one person hosts, the other joins</b> with a single
           <b>4-digit code</b> (peer-to-peer, no account needed). Each player plays on their own device.
           <b>Desktop:</b> A / D move, Space jump, mouse aims &amp; shoots. <b>Phone:</b> use the
-          on-screen arrows and JUMP button to move, drag/tap anywhere on the arena to aim and fire.
+          on-screen arrows and JUMP button to move, drag anywhere on the arena to aim, then lift
+          your finger to fire.
           You carry <b>one bullet</b> — fire it and you're empty until you reload. Bullets
           <b>ricochet once</b> off a wall or the arena edge, then gravity always pulls them down
           to rest on the ground. Walk up to a spent bullet to reload, or if you're unarmed, fire
@@ -389,6 +426,7 @@ const Mouse = (() => {
   let down = false;
   let justPressed = false;
   let activePointerId = null;
+  let isTouchAim = false;
 
   function toArenaCoords(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
@@ -400,10 +438,15 @@ const Mouse = (() => {
   canvas.addEventListener('pointerdown', (e) => {
     if (activePointerId !== null) return; // one active aim/shoot pointer at a time
     activePointerId = e.pointerId;
+    isTouchAim = (e.pointerType === 'touch' || e.pointerType === 'pen');
     const p = toArenaCoords(e.clientX, e.clientY);
     x = p.x; y = p.y;
-    if (!down) justPressed = true;
-    down = true;
+    if (!isTouchAim) {
+      // mouse: classic click-to-fire, immediately
+      if (!down) justPressed = true;
+      down = true;
+    }
+    // touch/pen: this just starts aiming — the shot fires on release (see pointerup)
     e.preventDefault();
   });
   window.addEventListener('pointermove', (e) => {
@@ -412,7 +455,10 @@ const Mouse = (() => {
     x = p.x; y = p.y;
   });
   window.addEventListener('pointerup', (e) => {
-    if (e.pointerId === activePointerId) { activePointerId = null; down = false; }
+    if (e.pointerId !== activePointerId) return;
+    if (isTouchAim) justPressed = true; // touch/pen: fire now, aimed at the last drag position
+    activePointerId = null;
+    down = false;
   });
   window.addEventListener('pointercancel', (e) => {
     if (e.pointerId === activePointerId) { activePointerId = null; down = false; }
@@ -1356,6 +1402,7 @@ function switchPanel(panel) {
 function beginMatch(role) {
   Audio_.resume();
   startOverlay.classList.remove('show');
+  document.getElementById('aimHint').classList.add('show');
   game = new Game(role);
 }
 Net.onOpen = () => beginMatch(Net.role);
