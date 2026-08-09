@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE BULLET</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    background: #0b0c10;
+    color: #e8e8f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  #gameContainer {
+    position: relative;
+    width: min(94vw, 960px);
+    aspect-ratio: 960 / 540;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #12141c;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 0 50px rgba(0,0,0,0.6);
+    cursor: crosshair;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(8,9,13,0.92);
+    border-radius: 10px;
+    backdrop-filter: blur(3px);
+    text-align: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .overlay.show { display: flex; }
+
+  .game-title {
+    font-size: clamp(26px, 5vw, 44px);
+    font-weight: 800;
+    letter-spacing: 8px;
+    background: linear-gradient(90deg, #35d8ff, #ff5d3d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 30px rgba(53,216,255,0.15);
+    margin-bottom: 4px;
+  }
+
+  .rule-note {
+    max-width: 520px;
+    font-size: 12.5px;
+    color: #8f93a8;
+    letter-spacing: 0.3px;
+    line-height: 1.55;
+  }
+  .rule-note b { color: #ffd08a; }
+
+  button {
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 11px 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #e8e8f0;
+    transition: all 0.15s ease;
+  }
+  button:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+  }
+  button.primary {
+    background: linear-gradient(90deg, rgba(53,216,255,0.18), rgba(255,93,61,0.18));
+    border-color: rgba(255,255,255,0.25);
+  }
+  button.link-btn {
+    background: transparent;
+    border: none;
+    color: #8f93a8;
+    text-decoration: underline;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 4px;
+  }
+  button.small { padding: 7px 16px; font-size: 11px; }
+
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  #lobbyPanels { width: 100%; max-width: 480px; }
+  .lobby-panel { display: none; flex-direction: column; gap: 8px; width: 100%; }
+  .lobby-panel.show { display: flex; }
+  .lobby-label { font-size: 12px; color: #b6bad0; text-align: left; letter-spacing: 0.5px; margin-top: 4px; }
+  textarea.code-box {
+    width: 100%;
+    height: 54px;
+    resize: none;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #ffe27a;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    padding: 8px;
+    word-break: break-all;
+  }
+  .status-line {
+    font-size: 12.5px;
+    color: #35d8ff;
+    min-height: 18px;
+    letter-spacing: 0.3px;
+  }
+
+  .winText {
+    font-size: clamp(24px, 4.5vw, 38px);
+    font-weight: 800;
+    letter-spacing: 3px;
+  }
+  .winText.p1 { color: #35d8ff; text-shadow: 0 0 25px #35d8ff; }
+  .winText.p2 { color: #ff5d3d; text-shadow: 0 0 25px #ff5d3d; }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+  <canvas id="canvas" width="960" height="540"></canvas>
+
+  <!-- START / LOBBY SCREEN -->
+  <div id="startOverlay" class="overlay show">
+    <div class="game-title">ONE BULLET</div>
+
+    <div id="lobbyPanels">
+      <!-- Main menu -->
+      <div id="menuPanel" class="lobby-panel show">
+        <div class="rule-note">
+          Real 2-player multiplayer — <b>one person hosts, the other joins</b> using a short
+          connection code (peer-to-peer, no account needed). Each player plays on their own
+          device: <b>A / D</b> move, <b>Space</b> jump, <b>mouse</b> aims your arm and gun,
+          <b>left click</b> shoots. You carry <b>one bullet</b> — fire it and you're empty
+          until you reload. Bullets <b>ricochet once</b> off a wall or the arena edge, then
+          gravity takes over and they always fall and settle on the ground — never stuck
+          floating on a wall. Walk up to a spent bullet to reload from it, or if you're
+          unarmed, press fire near one to <b>kick it away</b> instead.
+        </div>
+        <div class="btn-row">
+          <button id="hostBtn" class="primary">Host Match</button>
+          <button id="joinBtn">Join Match</button>
+        </div>
+      </div>
+
+      <!-- Host flow -->
+      <div id="hostPanel" class="lobby-panel">
+        <p class="lobby-label">1. Send this code to the other player:</p>
+        <textarea id="hostCodeOut" class="code-box" readonly placeholder="Generating..."></textarea>
+        <button id="copyHostCode" class="small">Copy Code</button>
+        <p class="lobby-label">2. Paste their response code here:</p>
+        <textarea id="hostAnswerIn" class="code-box" placeholder="Paste response code here"></textarea>
+        <button id="hostConnectBtn" class="primary">Connect</button>
+        <p id="hostStatus" class="status-line"></p>
+        <button id="hostBackBtn" class="link-btn">&larr; Back</button>
+      </div>
+
+      <!-- Join flow -->
+      <div id="joinPanel" class="lobby-panel">
+        <p class="lobby-label">1. Paste the host's code here:</p>
+        <textarea id="joinCodeIn" class="code-box" placeholder="Paste host code here"></textarea>
+        <button id="joinGenerateBtn" class="primary">Generate Response Code</button>
+        <p class="lobby-label">2. Send this code back to the host:</p>
+        <textarea id="joinCodeOut" class="code-box" readonly placeholder="Appears after step 1"></textarea>
+        <button id="copyJoinCode" class="small">Copy Code</button>
+        <p id="joinStatus" class="status-line"></p>
+        <button id="joinBackBtn" class="link-btn">&larr; Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIN SCREEN -->
+  <div id="winOverlay" class="overlay">
+    <div class="winText" id="winText">PLAYER 1 WINS</div>
+    <div class="btn-row">
+      <button id="rematchBtn" class="primary">Rematch</button>
+      <button id="menuBtn">Menu</button>
+    </div>
+  </div>
+
+  <!-- DISCONNECT SCREEN -->
+  <div id="disconnectOverlay" class="overlay">
+    <div class="winText">CONNECTION LOST</div>
+    <button id="reloadBtn" class="primary">Reload</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   ONE BULLET — peer-to-peer 2-player shooter (single HTML file, no backend)
+   Sections: Audio, Input, Mouse, Net (WebRTC), Physics/Collision, Arena,
+   Pickups, Player, Bullet, Game (host-authoritative), Rendering, UI wiring
+   ========================================================================== */
+
+const CANVAS_W = 960, CANVAS_H = 540;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+/* ------------------------------- AUDIO ------------------------------- */
+const Audio_ = (() => {
+  let ctxAudio = null;
+  function ensure() {
+    if (!ctxAudio) {
+      try { ctxAudio = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { ctxAudio = null; }
+    }
+    return ctxAudio;
+  }
+  function tone(freq, dur, type = 'square', vol = 0.08, sweepTo = null) {
+    const ac = ensure();
+    if (!ac) return;
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    if (sweepTo !== null) osc.frequency.exponentialRampToValueAtTime(sweepTo, ac.currentTime + dur);
+    gain.gain.setValueAtTime(vol, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    osc.connect(gain).connect(ac.destination);
+    osc.start();
+    osc.stop(ac.currentTime + dur);
+  }
+  return {
+    jump: () => tone(320, 0.12, 'square', 0.07, 480),
+    shoot: () => tone(900, 0.07, 'square', 0.06, 200),
+    hit: () => tone(160, 0.28, 'sawtooth', 0.12, 40),
+    bounce: () => tone(500, 0.05, 'triangle', 0.05, 700),
+    kick: () => tone(240, 0.09, 'square', 0.07, 90),
+    pickup: () => tone(700, 0.1, 'sine', 0.06, 1100),
+    empty: () => tone(150, 0.06, 'square', 0.04, 100),
+    resume: () => ensure()
+  };
+})();
+
+/* ------------------------------- INPUT (keyboard) ------------------------------- */
+const Input = (() => {
+  const held = new Set();
+  const justPressed = new Set();
+  window.addEventListener('keydown', (e) => {
+    const k = e.key;
+    if (k === 'a' || k === 'A' || k === 'd' || k === 'D' || k === ' ') {
+      e.preventDefault();
+      const norm = (k === ' ') ? ' ' : k.toLowerCase();
+      if (!held.has(norm)) justPressed.add(norm);
+      held.add(norm);
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    const k = e.key;
+    const norm = (k === ' ') ? ' ' : k.toLowerCase();
+    held.delete(norm);
+  });
+  return {
+    isDown: (k) => held.has(k),
+    wasPressed: (k) => justPressed.has(k),
+    clearFrame: () => justPressed.clear()
+  };
+})();
+
+/* ------------------------------- MOUSE (aim + shoot) ------------------------------- */
+const Mouse = (() => {
+  let x = CANVAS_W * 0.5, y = CANVAS_H * 0.5;
+  let down = false;
+  let justPressed = false;
+
+  function toArenaCoords(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_W / rect.width;
+    const scaleY = CANVAS_H / rect.height;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    const p = toArenaCoords(e.clientX, e.clientY);
+    x = p.x; y = p.y;
+  });
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) {
+      if (!down) justPressed = true;
+      down = true;
+    }
+  });
+  window.addEventListener('mouseup', (e) => {
+    if (e.button === 0) down = false;
+  });
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  return {
+    pos: () => ({ x, y }),
+    isDown: () => down,
+    wasPressed: () => justPressed,
+    clearFrame: () => { justPressed = false; }
+  };
+})();
+
+/* ------------------------------- NET (WebRTC, peer-to-peer, no server) ------------------------------- */
+// Manual "copy the code" signaling over a data channel. A public STUN
+// server is used only for NAT traversal — no game data or backend involved.
+const Net = {
+  pc: null,
+  channel: null,
+  role: null, // 'host' | 'guest'
+  onMessage: null,
+  onOpen: null,
+  onClose: null,
+
+  makePC() {
+    this.pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    return this.pc;
+  },
+
+  waitIceComplete(pc) {
+    return new Promise((resolve) => {
+      if (pc.iceGatheringState === 'complete') { resolve(); return; }
+      const check = () => {
+        if (pc.iceGatheringState === 'complete') {
+          pc.removeEventListener('icegatheringstatechange', check);
+          resolve();
+        }
+      };
+      pc.addEventListener('icegatheringstatechange', check);
+    });
+  },
+
+  encode(obj) { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); },
+  decode(str) { return JSON.parse(decodeURIComponent(escape(atob(str.trim())))); },
+
+  setupChannel(ch) {
+    this.channel = ch;
+    ch.addEventListener('open', () => this.onOpen && this.onOpen());
+    ch.addEventListener('close', () => this.onClose && this.onClose());
+    ch.addEventListener('message', (e) => {
+      try { this.onMessage && this.onMessage(JSON.parse(e.data)); } catch (err) { /* ignore malformed */ }
+    });
+  },
+
+  async host() {
+    this.role = 'host';
+    const pc = this.makePC();
+    const ch = pc.createDataChannel('game', { ordered: true });
+    this.setupChannel(ch);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await this.waitIceComplete(pc);
+    return this.encode(pc.localDescription);
+  },
+
+  async acceptAnswer(code) {
+    const desc = this.decode(code);
+    await this.pc.setRemoteDescription(desc);
+  },
+
+  async join(hostCode) {
+    this.role = 'guest';
+    const pc = this.makePC();
+    pc.addEventListener('datachannel', (e) => this.setupChannel(e.channel));
+    const offer = this.decode(hostCode);
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await this.waitIceComplete(pc);
+    return this.encode(pc.localDescription);
+  },
+
+  send(obj) {
+    if (this.channel && this.channel.readyState === 'open') this.channel.send(JSON.stringify(obj));
+  },
+
+  isOpen() { return !!this.channel && this.channel.readyState === 'open'; }
+};
+
+/* ------------------------------- ARENA ------------------------------- */
+// Every obstacle is low enough to jump over, so players can always close
+// distance and fight face to face rather than being permanently split.
+const arena = {
+  rects: [
+    { x: 0,   y: 500, w: 960, h: 40, type: 'floor' },
+    { x: 100, y: 380, w: 170, h: 20, type: 'platform' },
+    { x: 690, y: 380, w: 170, h: 20, type: 'platform' },
+    { x: 440, y: 430, w: 80,  h: 70, type: 'wall' },
+    { x: 250, y: 460, w: 55,  h: 40, type: 'cover' },
+    { x: 655, y: 460, w: 55,  h: 40, type: 'cover' }
+  ]
+};
+
+const PICKUP_SPAWNS = [
+  { x: 185, y: 358 },
+  { x: 775, y: 358 },
+  { x: 480, y: 408 }
+];
+const PICKUP_RESPAWN_TIME = 4.5;
+
+/* ------------------------------- PHYSICS ------------------------------- */
+const PHYSICS = {
+  gravity: 1500,
+  accel: 2600,
+  maxSpeed: 260,
+  friction: 2200,
+  jumpVelocity: -680, // strong enough to reach every platform directly, with margin
+  terminalVelocity: 900
+};
+
+function overlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function moveAndCollide(box, dt) {
+  box.x += box.vx * dt;
+  box.x = Math.max(0, Math.min(CANVAS_W - box.w, box.x));
+  for (const r of arena.rects) {
+    if (overlap(box, r)) {
+      if (box.vx > 0) box.x = r.x - box.w;
+      else if (box.vx < 0) box.x = r.x + r.w;
+      box.vx = 0;
+    }
+  }
+
+  box.onGround = false;
+  box.y += box.vy * dt;
+  for (const r of arena.rects) {
+    if (overlap(box, r)) {
+      if (box.vy > 0) { box.y = r.y - box.h; box.onGround = true; }
+      else if (box.vy < 0) { box.y = r.y + r.h; }
+      box.vy = 0;
+    }
+  }
+  if (box.y + box.h > CANVAS_H) {
+    box.y = CANVAS_H - box.h;
+    box.vy = 0;
+    box.onGround = true;
+  }
+}
+
+// Aim helpers shared by simulation (host) and rendering (host + guest)
+function computeAim(shoulder, target) {
+  const dx = target.x - shoulder.x;
+  const dy = target.y - shoulder.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return { x: dx / len, y: dy / len };
+}
+function computeMuzzle(shoulder, aim) {
+  const armLen = 20;
+  return { x: shoulder.x + aim.x * armLen, y: shoulder.y + aim.y * armLen };
+}
+
+/* ------------------------------- PICKUP ------------------------------- */
+class Pickup {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.r = 9;
+    this.available = true;
+    this.respawnTimer = 0;
+    this.bob = Math.random() * Math.PI * 2;
+  }
+  update(dt) {
+    this.bob += dt * 3;
+    if (!this.available) {
+      this.respawnTimer -= dt;
+      if (this.respawnTimer <= 0) this.available = true;
+    }
+  }
+  take() {
+    this.available = false;
+    this.respawnTimer = PICKUP_RESPAWN_TIME;
+  }
+}
+
+/* ------------------------------- PLAYER ------------------------------- */
+// Controller shape consumed by Player.update: { left, right, jumpPressed,
+// shootPressed, aimTarget:{x,y} } — same shape whether it comes from local
+// mouse/keyboard or from a network message, so the sim code doesn't care.
+class Player {
+  constructor(id, x, y, color) {
+    this.id = id;
+    this.x = x; this.y = y;
+    this.w = 24; this.h = 54;
+    this.vx = 0; this.vy = 0;
+    this.onGround = false;
+    this.color = color;
+    this.alive = true;
+    this.ammo = 1;
+    this.aim = { x: 1, y: 0 };
+    this.muzzle = { x: x + this.w / 2 + 20, y: y + 20 };
+    this.muzzleFlash = 0;
+    this.walkCycle = 0;
+  }
+
+  update(dt, game, controller) {
+    if (!this.alive) return;
+
+    let moveDir = 0;
+    if (controller.left) moveDir -= 1;
+    if (controller.right) moveDir += 1;
+
+    if (moveDir !== 0) {
+      this.vx += moveDir * PHYSICS.accel * dt;
+      this.vx = Math.max(-PHYSICS.maxSpeed, Math.min(PHYSICS.maxSpeed, this.vx));
+    } else {
+      const sign = Math.sign(this.vx);
+      const mag = Math.max(0, Math.abs(this.vx) - PHYSICS.friction * dt);
+      this.vx = sign * mag;
+    }
+
+    if (controller.jumpPressed && this.onGround) {
+      this.vy = PHYSICS.jumpVelocity;
+      this.onGround = false;
+      Audio_.jump();
+    }
+
+    this.vy += PHYSICS.gravity * dt;
+    this.vy = Math.min(this.vy, PHYSICS.terminalVelocity);
+
+    moveAndCollide(this, dt);
+
+    if (this.onGround && Math.abs(this.vx) > 10) this.walkCycle += dt * 10;
+    else this.walkCycle += dt * 2;
+
+    // aim follows the cursor/target regardless of movement direction
+    const shoulder = { x: this.x + this.w / 2, y: this.y + 20 };
+    const target = controller.aimTarget || { x: shoulder.x + 100, y: shoulder.y };
+    this.aim = computeAim(shoulder, target);
+    this.muzzle = computeMuzzle(shoulder, this.aim);
+
+    if (controller.shootPressed) {
+      if (this.ammo > 0) {
+        this.shoot(game);
+      } else {
+        // unarmed + fire pressed near a spent bullet on the ground = kick it away
+        const target = findNearbyRestingBullet(this, game);
+        if (target) kickBullet(target, this);
+        else Audio_.empty();
+      }
+    }
+
+    for (const pk of game.pickups) {
+      if (!pk.available) continue;
+      const dx = (this.x + this.w / 2) - pk.x;
+      const dy = (this.y + this.h / 2) - pk.y;
+      if (Math.hypot(dx, dy) < pk.r + this.w / 2) {
+        if (this.ammo < 1) {
+          this.ammo = 1;
+          pk.take();
+          Audio_.pickup();
+        }
+      }
+    }
+
+    // walking up to a resting bullet without firing quietly reloads it
+    if (this.ammo < 1) {
+      for (const b of game.bullets) {
+        if (b.state !== 'resting') continue;
+        const dx = (this.x + this.w / 2) - b.x;
+        const dy = (this.y + this.h / 2) - b.y;
+        if (Math.hypot(dx, dy) < BULLET_INTERACT_RADIUS) {
+          this.ammo = 1;
+          b.dead = true;
+          Audio_.pickup();
+          break;
+        }
+      }
+    }
+
+    this.muzzleFlash = Math.max(0, this.muzzleFlash - dt * 6);
+  }
+
+  shoot(game) {
+    const speed = 720;
+    game.bullets.push(new Bullet(this.muzzle.x, this.muzzle.y, this.aim.x * speed, this.aim.y * speed, this.id));
+    this.ammo = 0;
+    this.muzzleFlash = 1;
+    Audio_.shoot();
+  }
+}
+
+/* ------------------------------- BULLET ------------------------------- */
+const MAX_BOUNCES = 1;          // ricochets exactly once off a wall/boundary
+const BULLET_GRAVITY = 650;     // pulls every bullet toward the ground over time
+const RESTING_EXPIRY = 12;      // spent bullets vanish if nobody grabs them
+const BULLET_INTERACT_RADIUS = 32; // range to pick up / kick a resting bullet
+const KICK_SPEED = 520;
+let BULLET_ID_SEQ = 1;
+
+class Bullet {
+  constructor(x, y, vx, vy, ownerId) {
+    this.x = x; this.y = y;
+    this.vx = vx; this.vy = vy;
+    this.ownerId = ownerId;
+    this.uid = BULLET_ID_SEQ++;
+    this.r = 3.5;
+    this.dead = false;
+    this.bounces = 0;
+    this.age = 0;          // brief grace period before it can hit its own shooter
+    this.state = 'flying'; // 'flying' | 'resting'
+    this.restAge = 0;
+    this.trail = [];
+  }
+
+  update(dt, game) {
+    if (this.state === 'resting') {
+      this.restAge += dt;
+      if (this.restAge > RESTING_EXPIRY) this.dead = true;
+      return;
+    }
+
+    this.age += dt;
+    this.vy += BULLET_GRAVITY * dt; // gravity always wins eventually
+
+    const totalDist = Math.hypot(this.vx, this.vy) * dt;
+    const stepSize = 6;
+    const steps = Math.max(1, Math.ceil(totalDist / stepSize));
+    const stepDt = dt / steps;
+
+    for (let i = 0; i < steps; i++) {
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 6) this.trail.shift();
+
+      let nx = this.x + this.vx * stepDt;
+      let ny = this.y + this.vy * stepDt;
+
+      // --- arena boundary: bounce once, then just slide along it and fall ---
+      if (nx < 0 || nx > CANVAS_W) {
+        nx = Math.max(0, Math.min(CANVAS_W, nx));
+        if (this.bounces < MAX_BOUNCES) { this.vx = -this.vx; this.registerBounce(game); }
+        else { this.vx = 0; }
+      }
+      if (ny < 0) {
+        ny = 0;
+        if (this.bounces < MAX_BOUNCES) { this.vy = -this.vy; this.registerBounce(game); }
+        else { this.vy = 0; }
+      }
+      if (ny >= CANVAS_H) {
+        this.x = nx;
+        this.land(CANVAS_H, game);
+        return;
+      }
+
+      this.x = nx; this.y = ny;
+
+      // --- arena geometry ---
+      let hitRect = null;
+      for (const r of arena.rects) {
+        if (this.x > r.x && this.x < r.x + r.w && this.y > r.y && this.y < r.y + r.h) {
+          hitRect = r;
+          break;
+        }
+      }
+      if (hitRect) {
+        const dLeft = this.x - hitRect.x;
+        const dRight = (hitRect.x + hitRect.w) - this.x;
+        const dTop = this.y - hitRect.y;
+        const dBottom = (hitRect.y + hitRect.h) - this.y;
+        const minDist = Math.min(dLeft, dRight, dTop, dBottom);
+        const EPS = 2;
+
+        // falling onto any top surface always comes to rest there — this is
+        // what stops bullets from ever freezing mid-air against a wall face
+        if (minDist === dTop && this.vy > 0) {
+          this.land(hitRect.y - EPS, game);
+          return;
+        }
+
+        if (minDist === dTop || minDist === dBottom) {
+          this.y = (minDist === dTop) ? hitRect.y - EPS : hitRect.y + hitRect.h + EPS;
+          if (this.bounces < MAX_BOUNCES) {
+            this.vy = -this.vy;
+            game.spawnImpact(this.x, this.y);
+            this.registerBounce(game);
+          } else {
+            this.vy = 0;
+          }
+        } else {
+          this.x = (minDist === dLeft) ? hitRect.x - EPS : hitRect.x + hitRect.w + EPS;
+          if (this.bounces < MAX_BOUNCES) {
+            this.vx = -this.vx;
+            game.spawnImpact(this.x, this.y);
+            this.registerBounce(game);
+          } else {
+            this.vx = 0; // out of bounces — stop hugging the wall, let gravity drop it
+          }
+        }
+        if (this.dead) return;
+        continue;
+      }
+
+      // --- players ---
+      for (const p of game.players) {
+        if (!p.alive) continue;
+        if (p.id === this.ownerId && this.age < 0.09) continue;
+        if (this.x > p.x && this.x < p.x + p.w && this.y > p.y && this.y < p.y + p.h) {
+          this.dead = true;
+          game.onPlayerHit(p, this);
+          return;
+        }
+      }
+    }
+  }
+
+  // Comes to a full stop on a surface and becomes a retrievable/kickable object.
+  land(y, game) {
+    this.y = y;
+    this.vx = 0; this.vy = 0;
+    this.state = 'resting';
+    this.restAge = 0;
+    game.spawnImpact(this.x, this.y);
+  }
+
+  registerBounce(game) {
+    this.bounces++;
+    Audio_.bounce();
+  }
+}
+
+// Find the nearest resting bullet within kicking/picking range of a player.
+function findNearbyRestingBullet(player, game) {
+  let best = null, bestDist = Infinity;
+  for (const b of game.bullets) {
+    if (b.state !== 'resting') continue;
+    const dx = (player.x + player.w / 2) - b.x;
+    const dy = (player.y + player.h / 2) - b.y;
+    const d = Math.hypot(dx, dy);
+    if (d < BULLET_INTERACT_RADIUS && d < bestDist) { best = b; bestDist = d; }
+  }
+  return best;
+}
+
+// Punt a resting bullet away in the direction the player is currently aiming.
+function kickBullet(b, player) {
+  b.state = 'flying';
+  b.dead = false;
+  b.bounces = 0;
+  b.age = 0;
+  b.trail = [];
+  b.ownerId = player.id;
+  b.vx = player.aim.x * KICK_SPEED;
+  b.vy = player.aim.y * KICK_SPEED - 140; // slight upward pop for a satisfying arc
+  Audio_.kick();
+}
+
+/* ------------------------------- GAME (host-authoritative) ------------------------------- */
+class Game {
+  constructor(role) {
+    this.role = role; // 'host' | 'guest'
+    this.state = 'playing';
+    this.winnerId = null;
+    this.lastTime = performance.now();
+    this.impacts = [];
+
+    // shared / rendering pickups exist on both sides; host owns availability,
+    // guest just mirrors it and animates the bob locally
+    this.pickups = PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y));
+
+    if (role === 'host') {
+      this.players = [
+        new Player('p1', 90, 420, '#35d8ff'),
+        new Player('p2', 846, 420, '#ff5d3d')
+      ];
+      this.bullets = [];
+      this.remoteController = { left: false, right: false, aimTarget: { x: 300, y: 400 } };
+      this.remoteJumpQueued = false;
+      this.remoteShootQueued = false;
+    } else {
+      this.remotePlayers = null;   // last received render data for both players
+      this.remoteBullets = [];
+      this.bulletTrails = new Map(); // uid -> trail points
+      this._prevPlayers = null;
+    }
+
+    Net.onMessage = (msg) => this.handleNetMessage(msg);
+    Net.onClose = () => this.handleDisconnect();
+
+    requestAnimationFrame(this.loop.bind(this));
+  }
+
+  /* ---------- networking ---------- */
+  handleNetMessage(msg) {
+    if (this.role === 'host') {
+      if (msg.t === 'i') {
+        this.remoteController.left = msg.l;
+        this.remoteController.right = msg.r;
+        this.remoteController.aimTarget = { x: msg.ax, y: msg.ay };
+        if (msg.j) this.remoteJumpQueued = true;
+        if (msg.sh) this.remoteShootQueued = true;
+      } else if (msg.t === 'rematch') {
+        this.resetHost();
+      }
+    } else {
+      if (msg.t === 's') this.applyRemoteState(msg);
+    }
+  }
+
+  handleDisconnect() {
+    document.getElementById('disconnectOverlay').classList.add('show');
+  }
+
+  applyRemoteState(msg) {
+    // sound heuristics based on state deltas (guest doesn't simulate directly)
+    if (this._prevPlayers) {
+      msg.p.forEach((p, i) => {
+        const prev = this._prevPlayers[i];
+        if (!prev) return;
+        if (prev.ammo === 1 && p.ammo === 0) Audio_.shoot();
+        if (prev.ammo === 0 && p.ammo === 1) Audio_.pickup();
+        if (prev.alive && !p.alive) Audio_.hit();
+      });
+    }
+    this._prevPlayers = msg.p;
+    this.remotePlayers = msg.p;
+
+    const seen = new Set();
+    for (const b of msg.b) {
+      seen.add(b.id);
+      if (!b.rs) {
+        let trail = this.bulletTrails.get(b.id);
+        if (!trail) { trail = []; this.bulletTrails.set(b.id, trail); }
+        trail.push({ x: b.x, y: b.y });
+        if (trail.length > 6) trail.shift();
+      }
+    }
+    for (const id of Array.from(this.bulletTrails.keys())) {
+      if (!seen.has(id)) this.bulletTrails.delete(id);
+    }
+    this.remoteBullets = msg.b;
+
+    msg.k.forEach((avail, i) => { if (this.pickups[i]) this.pickups[i].available = avail; });
+
+    if (msg.st === 'gameover' && this.state !== 'gameover') {
+      this.state = 'gameover';
+      this.winnerId = msg.w;
+      showWinScreen(this.winnerId);
+    } else if (msg.st === 'playing') {
+      this.state = 'playing';
+    }
+  }
+
+  /* ---------- host simulation ---------- */
+  resetHost() {
+    this.players = [
+      new Player('p1', 90, 420, '#35d8ff'),
+      new Player('p2', 846, 420, '#ff5d3d')
+    ];
+    this.bullets = [];
+    this.pickups = PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y));
+    this.impacts = [];
+    this.winnerId = null;
+    this.remoteController = { left: false, right: false, aimTarget: { x: 300, y: 400 } };
+    this.remoteJumpQueued = false;
+    this.remoteShootQueued = false;
+    this.state = 'playing';
+  }
+
+  spawnImpact(x, y) {
+    for (let i = 0; i < 5; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 40 + Math.random() * 60;
+      this.impacts.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1 });
+    }
+  }
+
+  onPlayerHit(player, bullet) {
+    player.alive = false;
+    this.spawnImpact(bullet.x, bullet.y);
+    Audio_.hit();
+    const winner = this.players.find(p => p.id !== player.id);
+    this.winnerId = winner.id;
+    this.state = 'gameover';
+    showWinScreen(this.winnerId);
+  }
+
+  getLocalController() {
+    const mp = Mouse.pos();
+    return {
+      left: Input.isDown('a'),
+      right: Input.isDown('d'),
+      jumpPressed: Input.wasPressed(' '),
+      shootPressed: Mouse.wasPressed(),
+      aimTarget: mp
+    };
+  }
+
+  updateHost(dt) {
+    const localCtrl = this.getLocalController();
+    const remoteCtrl = {
+      left: this.remoteController.left,
+      right: this.remoteController.right,
+      jumpPressed: this.remoteJumpQueued,
+      shootPressed: this.remoteShootQueued,
+      aimTarget: this.remoteController.aimTarget
+    };
+
+    this.players[0].update(dt, this, localCtrl);
+    this.players[1].update(dt, this, remoteCtrl);
+    this.remoteJumpQueued = false;
+    this.remoteShootQueued = false;
+
+    for (const b of this.bullets) b.update(dt, this);
+    this.bullets = this.bullets.filter(b => !b.dead);
+
+    for (const pk of this.pickups) pk.update(dt);
+
+    for (const im of this.impacts) {
+      im.x += im.vx * dt; im.y += im.vy * dt;
+      im.vx *= 0.9; im.vy *= 0.9;
+      im.life -= dt * 2.2;
+    }
+    this.impacts = this.impacts.filter(im => im.life > 0);
+
+    Input.clearFrame();
+    Mouse.clearFrame();
+
+    this.broadcastState();
+  }
+
+  broadcastState() {
+    if (!Net.isOpen()) return;
+    Net.send({
+      t: 's',
+      p: this.players.map(p => ({
+        x: p.x, y: p.y, alive: p.alive, ammo: p.ammo,
+        aim: p.aim, mf: p.muzzleFlash, wc: p.walkCycle, og: p.onGround
+      })),
+      b: this.bullets.map(b => ({ id: b.uid, x: b.x, y: b.y, rs: b.state === 'resting' })),
+      k: this.pickups.map(pk => pk.available),
+      st: this.state,
+      w: this.winnerId
+    });
+  }
+
+  /* ---------- guest (thin client) ---------- */
+  updateGuest(dt) {
+    const localCtrl = this.getLocalController();
+    Net.send({
+      t: 'i',
+      l: localCtrl.left, r: localCtrl.right,
+      j: localCtrl.jumpPressed, sh: localCtrl.shootPressed,
+      ax: localCtrl.aimTarget.x, ay: localCtrl.aimTarget.y
+    });
+    Input.clearFrame();
+    Mouse.clearFrame();
+    for (const pk of this.pickups) pk.bob += dt * 3; // cosmetic only
+  }
+
+  /* ---------- main loop ---------- */
+  loop(now) {
+    let dt = (now - this.lastTime) / 1000;
+    dt = Math.min(dt, 1 / 30);
+    this.lastTime = now;
+
+    if (this.state === 'playing') {
+      if (this.role === 'host') this.updateHost(dt);
+      else this.updateGuest(dt);
+    }
+
+    Render.frame(this);
+    requestAnimationFrame(this.loop.bind(this));
+  }
+}
+
+/* ------------------------------- RENDERING ------------------------------- */
+const Render = (() => {
+  function background() {
+    const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+    g.addColorStop(0, '#161923');
+    g.addColorStop(1, '#0c0d13');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.025)';
+    for (let x = 20; x < CANVAS_W; x += 40) {
+      for (let y = 20; y < CANVAS_H; y += 40) {
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, CANVAS_W - 4, CANVAS_H - 4);
+  }
+
+  function arenaGeometry() {
+    for (const r of arena.rects) {
+      let fill, stroke;
+      switch (r.type) {
+        case 'floor': fill = '#23262f'; stroke = '#343846'; break;
+        case 'platform': fill = '#2a2e3a'; stroke = '#454b5c'; break;
+        case 'wall': fill = '#20222b'; stroke = '#3c4150'; break;
+        case 'cover': fill = '#2e3240'; stroke = '#4a5064'; break;
+        default: fill = '#222'; stroke = '#444';
+      }
+      ctx.fillStyle = fill;
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.fillRect(r.x, r.y, r.w, 3);
+    }
+  }
+
+  function pickups(list) {
+    for (const pk of list) {
+      if (!pk.available) continue;
+      const bobY = pk.y + Math.sin(pk.bob) * 4;
+      ctx.save();
+      ctx.translate(pk.x, bobY);
+      ctx.shadowColor = '#ffe27a';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#ffe27a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, pk.r, pk.r * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff6c8';
+      ctx.beginPath();
+      ctx.ellipse(-2, -1, pk.r * 0.35, pk.r * 0.22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function ammoIndicator(p) {
+    if (!p.alive) return;
+    const cx = p.x + p.w / 2;
+    const cy = p.y - 12;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    if (p.ammo > 0) {
+      ctx.fillStyle = '#ffe27a';
+      ctx.shadowColor = '#ffe27a';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function stickman(p) {
+    if (!p.alive) return;
+    ctx.save();
+
+    const cx = p.x + p.w / 2;
+    const headY = p.y + 9;
+    const shoulderY = p.y + 20;
+    const hipY = p.y + 38;
+    const footY = p.y + p.h;
+
+    ctx.strokeStyle = p.color;
+    ctx.fillStyle = p.color;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 8;
+
+    const legSwing = p.onGround ? Math.sin(p.walkCycle) * 8 : 4;
+    ctx.beginPath();
+    ctx.moveTo(cx, hipY);
+    ctx.lineTo(cx - 7 + legSwing * 0.3, footY);
+    ctx.moveTo(cx, hipY);
+    ctx.lineTo(cx + 7 - legSwing * 0.3, footY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, shoulderY);
+    ctx.lineTo(cx, hipY);
+    ctx.stroke();
+
+    const aim = p.aim || { x: 1, y: 0 };
+    const shoulder = { x: cx, y: shoulderY };
+    const hand = computeMuzzle(shoulder, aim);
+    const facing = aim.x >= 0 ? 1 : -1;
+
+    ctx.beginPath();
+    ctx.moveTo(shoulder.x, shoulder.y);
+    ctx.lineTo(shoulder.x - facing * 6, hipY - 4);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(shoulder.x, shoulder.y);
+    ctx.lineTo(hand.x, hand.y);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(hand.x, hand.y);
+    ctx.rotate(Math.atan2(aim.y, aim.x));
+    ctx.fillStyle = p.ammo > 0 ? '#dfe3ee' : '#7a7d8a';
+    ctx.shadowBlur = 3;
+    ctx.fillRect(0, -2.5, 16, 5);
+    ctx.restore();
+
+    if (p.muzzleFlash > 0) {
+      ctx.save();
+      ctx.globalAlpha = p.muzzleFlash;
+      ctx.fillStyle = '#fff6c8';
+      ctx.beginPath();
+      ctx.arc(hand.x + aim.x * 16, hand.y + aim.y * 16, 5 * p.muzzleFlash + 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(cx, headY, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+    ammoIndicator(p);
+  }
+
+  function bullets(list) {
+    for (const b of list) {
+      ctx.save();
+      if (b.state === 'resting') {
+        // grounded, retrievable — small shadow + steady pulse instead of a trail
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(b.x, b.y + 4, 6, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      } else {
+        const trail = b.trail || [];
+        for (let i = 0; i < trail.length; i++) {
+          const t = trail[i];
+          ctx.globalAlpha = (i / trail.length) * 0.5;
+          ctx.fillStyle = '#fff6c8';
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, b.r * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = '#fff6c8';
+      ctx.shadowColor = '#ffe27a';
+      ctx.shadowBlur = b.state === 'resting' ? 10 : 6;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function impacts(list) {
+    for (const im of list) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, im.life);
+      ctx.fillStyle = '#ffd08a';
+      ctx.beginPath();
+      ctx.arc(im.x, im.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function buildGuestPlayerView(mp, index) {
+    return {
+      x: mp.x, y: mp.y, w: 24, h: 54,
+      alive: mp.alive,
+      color: index === 0 ? '#35d8ff' : '#ff5d3d',
+      ammo: mp.ammo,
+      aim: mp.aim,
+      muzzleFlash: mp.mf,
+      walkCycle: mp.wc,
+      onGround: mp.og
+    };
+  }
+
+  function frame(game) {
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    background();
+    arenaGeometry();
+
+    let viewPlayers, viewBullets, viewImpacts;
+    if (game.role === 'host') {
+      viewPlayers = game.players;
+      viewBullets = game.bullets;
+      viewImpacts = game.impacts;
+    } else {
+      viewPlayers = (game.remotePlayers || []).map((mp, i) => buildGuestPlayerView(mp, i));
+      viewBullets = (game.remoteBullets || []).map(b => ({
+        x: b.x, y: b.y, r: 3.5,
+        state: b.rs ? 'resting' : 'flying',
+        trail: b.rs ? [] : (game.bulletTrails.get(b.id) || [])
+      }));
+      viewImpacts = [];
+    }
+
+    pickups(game.pickups);
+    bullets(viewBullets);
+    for (const p of viewPlayers) stickman(p);
+    impacts(viewImpacts);
+  }
+
+  return { frame };
+})();
+
+/* ------------------------------- UI WIRING ------------------------------- */
+const startOverlay = document.getElementById('startOverlay');
+const winOverlay = document.getElementById('winOverlay');
+const winText = document.getElementById('winText');
+
+const menuPanel = document.getElementById('menuPanel');
+const hostPanel = document.getElementById('hostPanel');
+const joinPanel = document.getElementById('joinPanel');
+
+let game = null;
+
+function showWinScreen(winnerId) {
+  winText.textContent = (winnerId === 'p1' ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS');
+  winText.className = 'winText ' + winnerId;
+  winOverlay.classList.add('show');
+}
+
+function switchPanel(panel) {
+  [menuPanel, hostPanel, joinPanel].forEach(p => p.classList.remove('show'));
+  panel.classList.add('show');
+}
+
+function beginMatch(role) {
+  Audio_.resume();
+  startOverlay.classList.remove('show');
+  game = new Game(role);
+}
+Net.onOpen = () => beginMatch(Net.role);
+
+async function copyToClipboard(el) {
+  try { await navigator.clipboard.writeText(el.value); }
+  catch (e) { el.select(); try { document.execCommand('copy'); } catch (e2) {} }
+}
+
+/* ---- menu ---- */
+document.getElementById('hostBtn').addEventListener('click', async () => {
+  switchPanel(hostPanel);
+  const status = document.getElementById('hostStatus');
+  const out = document.getElementById('hostCodeOut');
+  out.value = ''; status.textContent = 'Generating code...';
+  try {
+    const code = await Net.host();
+    out.value = code;
+    status.textContent = 'Send this code to the other player, then paste their response below.';
+  } catch (e) {
+    status.textContent = 'Could not create a match on this device/browser.';
+  }
+});
+
+document.getElementById('joinBtn').addEventListener('click', () => {
+  switchPanel(joinPanel);
+  document.getElementById('joinStatus').textContent = '';
+  document.getElementById('joinCodeIn').value = '';
+  document.getElementById('joinCodeOut').value = '';
+});
+
+/* ---- host flow ---- */
+document.getElementById('copyHostCode').addEventListener('click', () => {
+  copyToClipboard(document.getElementById('hostCodeOut'));
+});
+document.getElementById('hostConnectBtn').addEventListener('click', async () => {
+  const status = document.getElementById('hostStatus');
+  const answer = document.getElementById('hostAnswerIn').value.trim();
+  if (!answer) { status.textContent = 'Paste the response code first.'; return; }
+  status.textContent = 'Connecting...';
+  try {
+    await Net.acceptAnswer(answer);
+    status.textContent = 'Waiting for connection to open...';
+  } catch (e) {
+    status.textContent = 'That code looks invalid. Double-check and try again.';
+  }
+});
+document.getElementById('hostBackBtn').addEventListener('click', () => location.reload());
+
+/* ---- join flow ---- */
+document.getElementById('copyJoinCode').addEventListener('click', () => {
+  copyToClipboard(document.getElementById('joinCodeOut'));
+});
+document.getElementById('joinGenerateBtn').addEventListener('click', async () => {
+  const status = document.getElementById('joinStatus');
+  const hostCode = document.getElementById('joinCodeIn').value.trim();
+  if (!hostCode) { status.textContent = 'Paste the host code first.'; return; }
+  status.textContent = 'Generating response code...';
+  try {
+    const answer = await Net.join(hostCode);
+    document.getElementById('joinCodeOut').value = answer;
+    status.textContent = 'Send this back to the host, then wait for the match to start.';
+  } catch (e) {
+    status.textContent = 'That code looks invalid. Double-check and try again.';
+  }
+});
+document.getElementById('joinBackBtn').addEventListener('click', () => location.reload());
+
+/* ---- win / disconnect screens ---- */
+document.getElementById('rematchBtn').addEventListener('click', () => {
+  winOverlay.classList.remove('show');
+  if (!game) return;
+  if (game.role === 'host') {
+    game.resetHost();
+  } else {
+    Net.send({ t: 'rematch' });
+    game.state = 'playing';
+  }
+});
+document.getElementById('menuBtn').addEventListener('click', () => location.reload());
+document.getElementById('reloadBtn').addEventListener('click', () => location.reload());
+
+/* ---- idle preview behind the lobby ---- */
+(function idlePreview() {
+  const dummy = {
+    role: 'host',
+    players: [],
+    bullets: [],
+    pickups: PICKUP_SPAWNS.map(s => new Pickup(s.x, s.y)),
+    impacts: []
+  };
+  Render.frame(dummy);
+})();
+</script>
+</body>
+</html>
